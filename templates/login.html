@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% block header%}
+Login / <a href="/new_user/">Sign up</a>
+{% endblock %}
+
+<div>
+    {% if form.errors %}
+    <p class="error">Incorrect username or password</p>
+    {% endif %}
+
+    <form class="main" action='.' method='post'>
+        <label for="username">User name:</label>
+        <input type="text" name="username" value="" id="username">
+        <br>
+        <label for="password">Password:</label>
+        <input type="password" name="password" value="" id="password">
+        <br>
+        <input type="submit" value="login" />
+        <input type="hidden" name="next" value="{{ next|escape }}" />
+    </form>
+</div>
+
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#username").attr("value", $.cookie("user"));
+        $("form").submit( function() {
+            $.cookie("user", $("#username").attr("value"));
+        });
+    });
+    
+</script>
+
+{% endblock %}
+

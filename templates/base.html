@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <link rel="shortcut icon" href="http://img1.wsimg.com/assets/godaddy.ico" type="image/x-icon" />
+        <link rel="stylesheet" href="file:///e:/python/work/mysite/media/style.css" />
+
+		<style type="text/css">
+				{% include "style.css" %}
+		</style>
+</head>
+
+<body>
+    <div class="top_header">
+        <div class="nav_menu">
+            {% if user.is_authenticated %}
+            Logged in as: <span id="user_name"><a href="/profile/{{user.id}}/">{{ user }}</a></span>
+            <a href="/accounts/logout">(logout)</a>
+            {% else %}
+            <a href="/">Login</a> / <a href="/new_user/">Sign up</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="main_block">
+        {% block content %}<h1>NO CONTENT BLOCK !!</h1>{% endblock %}
+    </div>
+</body>
+</html>
+
