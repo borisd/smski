@@ -8,6 +8,7 @@ from django.contrib import auth
 # App specific imports
 from myproject.smski.models import Profile, FriendRequest
 from myproject.smski.forms import SignUpForm, SetPhoneForm, VerifyPhoneForm
+from myproject.smski.relations import *
 
 # Utilities
 import datetime, re
@@ -116,21 +117,15 @@ def users(request):
         profile = muser.get_profile()
         id = muser.id
         nick = muser.username
-        req = []
-        if muser == user:
-            relation = 0    # Same user
-        elif muser.friends.filter(user=user):
-            relation = 1    # Already friend
-        elif user.freqto.filter(by=muser):
-            req = user.freqto.filter(by=muser)[0].id
-            relation = 2    # He sent me request
-        elif muser.freqto.filter(by=user):
-            req = muser.freqto.filter(by=user)[0].id
-            relation = 3    # I sent him request
-        else:
-            relation = 4    # Never met.. yet
+        req_id = 0
+
+        rel = relation(user, muser)
+        if rel == REL_A2B:
+            req_id = muser.freqto.filter(by=user)[0].id
+        elif rel == REL_B2A:
+            req_id = user.freqto.filter(by=muser)[0].id
             
-        return { 'id':id, 'nick':nick, 'relation':relation, 'reqid':req }
+        return { 'id':id, 'nick':nick, 'relation':rel, 'reqid':req_id }
     
     data = map(full_info, User.objects.all().order_by('username'))
 
@@ -138,16 +133,6 @@ def users(request):
 
 @login_required
 def friend_request(request, user_id):
-
-    def pending_request(user_a, user_b):
-        reqs = user_b.freqto.filter(by=user_a)
-        if reqs:
-            return reqs[0]
-        return False
-
-    def friends(user_a, user_b):
-        return user_a.friends.filter(user=user_b)
-
     muser = get_object_or_404(User, pk=user_id)
 
     if not request.method == 'POST':
@@ -161,20 +146,15 @@ def friend_request(request, user_id):
     op = request.POST.get("Action", "")
 
     if op == 'Add':
-        if friends(muser, request.user):
+        if relation(muser, request.user) != REL_NONE:
             return HttpResponseRedirect("/")
    
-        if pending_request(request.user, muser) or pending_request(muser, request.user):
-            return HttpResponseRedirect("/")
-
         fr = FriendRequest(by=request.user, to=muser, date=datetime.datetime.now(), status=0)
         fr.save()
         print "Added"
 
     if op == 'Cancel':
         pending = pending_request(request.user, muser)
-        print "Well "
-        print pending
         if not pending:
             return HttpResponseRedirect("/")
 
@@ -199,10 +179,10 @@ def friend_request(request, user_id):
         if not friends(muser, request.user):
             return HttpResponseRedirect("/")
 
-        req = pending(request.user, muser)
+        req = pending_request(request.user, muser)
         if req:
             req.delete()
-        req = pending(muser, request.user)
+        req = pending_request(muser, request.user)
         if req:
             req.delete()
 
