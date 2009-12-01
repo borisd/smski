@@ -12,5 +12,6 @@ urlpatterns = patterns('myproject',
     (r'^accounts/logout/$', logout, {"next_page":"/"}),
     (r'^set_phone/(?P<user_id>\d+)/$', 'smski.views.set_phone'),
     (r'^verify_phone/(?P<user_id>\d+)/$', 'smski.views.verify_phone'),
+    (r'^friend_request/$', 'smski.views.friend_request'),
 )
 

@@ -16,24 +16,16 @@ import datetime, re
 def index(request):
     user = request.user
 
-    def user_link(by):
-        return '''<a href="/profile/%s">%s</a>''' % (by.id, by)
-    def freq_accept(freq):
-        return '''<a href="/friend_request/accept/%s">accept</a>''' % (freq.id)
-    def freq_reject(freq):
-        return '''<a href="/friend_request/reject/%s">reject</a>''' % (freq.id)
-    def freq_cancel(freq):
-        return '''<a href="/friend_request/cancel/%s">cancel</a>''' % (freq.id)
+    user_link   = lambda by:   '''<a href="/profile/%s">%s</a>''' % (by.id, by)
+    freq_accept = lambda freq: '''<a href="/friend_request/accept/%s">accept</a>''' % (freq.id)
+    freq_reject = lambda freq: '''<a href="/friend_request/reject/%s">reject</a>''' % (freq.id)
+    freq_cancel = lambda freq: '''<a href="/friend_request/cancel/%s">cancel</a>''' % (freq.id)
 
-    def freq(type, by, to, freq):
-        return "Friend request from %s (%s/%s)" % (user_link(freq.by), freq_accept(freq), freq_reject(freq))
-    def freq2(by, to, freq):
-        return "You rejected %s's friend request" % (user_link(freq.by))
-    def freq3(by, to, freq):
-        return "You accepted %s's friend request !" % (user_link(freq.by))
-    def freq4(by, to, freq):
-        return "You sent friend request to %s (%s)" % (user_link(freq.to), freq_cancel(freq))
-    freq5 = lambda freq: return "%s accepted your friend request !" % (user_link(freq.to))
+    freq1 = lambda freq: ("Friend request from %s (%s/%s)" % (user_link(freq.by), freq_accept(freq), freq_reject(freq)))
+    freq2 = lambda freq: ("You rejected %s's friend request" % (user_link(freq.by)))
+    freq3 = lambda freq: ("You accepted %s's friend request !" % (user_link(freq.by)))
+    freq4 = lambda freq: ("You sent friend request to %s (%s)" % (user_link(freq.to), freq_cancel(freq)))
+    freq5 = lambda freq: ("%s accepted your friend request !" % (user_link(freq.to)))
 
     #             ToMe    FromME
     # Pending     freq1   freq4
@@ -126,18 +118,21 @@ def users(request):
         profile = muser.get_profile()
         id = muser.id
         nick = muser.username
+        req = []
         if muser == user:
             relation = 0    # Same user
         elif muser.friends.filter(user=user):
             relation = 1    # Already friend
         elif user.freqto.filter(by=muser):
+            req = user.freqto.filter(by=muser)[0].id
             relation = 2    # He sent me request
         elif muser.freqto.filter(by=user):
+            req = muser.freqto.filter(by=user)[0].id
             relation = 3    # I sent him request
         else:
             relation = 4    # Never met.. yet
             
-        return { 'id':id, 'nick':nick, 'relation':relation }
+        return { 'id':id, 'nick':nick, 'relation':relation, 'reqid':req }
     
     data = map(full_info, User.objects.all())
 
