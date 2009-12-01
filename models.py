@@ -18,3 +18,16 @@ class PhoneVerification(models.Model):
     attempt = models.IntegerField('Current attempt number')
     date = models.DateTimeField('Time when code was sent')
 
+FRIEND_REQUEST_STATUS = (
+    (0, 'Pending'),
+    (1, 'Rejected'),
+    (2, 'Accepted'),
+)    
+
+class FriendRequest(models.Model):
+    ''' Model for requests to be friends '''
+    by = models.ForeignKey(User, related_name='freqby')
+    to = models.ForeignKey(User, related_name='freqto')
+    date = models.DateTimeField('Time request was sent/accepted')
+    status = models.IntegerField(choices=FRIEND_REQUEST_STATUS)
+

@@ -1,5 +1,13 @@
 {% extends "base.html" %}
 
 {% block content %}
+<a href="/user_list"/>See all users</a>
+<ul>
+    {% for item in data %}
+    <li>
+    <h5>{{ item.date|timesince }} ago </h5>{{ item.str|safe }}
+    </li>
+    {% endfor %}
+</ul>
 {% endblock %}
 
