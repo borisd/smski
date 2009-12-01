@@ -22,16 +22,14 @@ def index(request):
     freq_cancel = lambda freq: '''<a href="/friend_request/cancel/%s">cancel</a>''' % (freq.id)
 
     freq1 = lambda freq: ("Friend request from %s (%s/%s)" % (user_link(freq.by), freq_accept(freq), freq_reject(freq)))
-    freq2 = lambda freq: ("You rejected %s's friend request" % (user_link(freq.by)))
-    freq3 = lambda freq: ("You accepted %s's friend request !" % (user_link(freq.by)))
-    freq4 = lambda freq: ("You sent friend request to %s (%s)" % (user_link(freq.to), freq_cancel(freq)))
-    freq5 = lambda freq: ("%s accepted your friend request !" % (user_link(freq.to)))
+    freq2 = lambda freq: ("You accepted %s's friend request !" % (user_link(freq.by)))
+    freq3 = lambda freq: ("You sent friend request to %s (%s)" % (user_link(freq.to), freq_cancel(freq)))
+    freq4 = lambda freq: ("%s accepted your friend request !" % (user_link(freq.to)))
 
     #             ToMe    FromME
-    # Pending     freq1   freq4
-    # Rejected    freq2   freq4
-    # Accepted    freq3   freq5  
-    FMap = ((freq1, freq4), (freq2, freq4), (freq4, freq5))
+    # Pending     freq1   freq3
+    # Accepted    freq2   freq4  
+    FMap = ((freq1, freq3), (freq2, freq4))
 
     def full_info(freq):
         return {
@@ -134,10 +132,84 @@ def users(request):
             
         return { 'id':id, 'nick':nick, 'relation':relation, 'reqid':req }
     
-    data = map(full_info, User.objects.all())
+    data = map(full_info, User.objects.all().order_by('username'))
 
     return render_to_response('user_list.html', { 'data': data, 'user': user, })
 
-def friend_request(request, action, request_id):
-    pass
+@login_required
+def friend_request(request, user_id):
+
+    def pending_request(user_a, user_b):
+        reqs = user_b.freqto.filter(by=user_a)
+        if reqs:
+            return reqs[0]
+        return False
+
+    def friends(user_a, user_b):
+        return user_a.friends.filter(user=user_b)
+
+    muser = get_object_or_404(User, pk=user_id)
+
+    if not request.method == 'POST':
+        return HttpResponseRedirect("/")
+
+    print request.POST
+
+    if muser == request.user:
+        return HttpResponseRedirect("/")
+
+    op = request.POST.get("Action", "")
+
+    if op == 'Add':
+        if friends(muser, request.user):
+            return HttpResponseRedirect("/")
+   
+        if pending_request(request.user, muser) or pending_request(muser, request.user):
+            return HttpResponseRedirect("/")
+
+        fr = FriendRequest(by=request.user, to=muser, date=datetime.datetime.now(), status=0)
+        fr.save()
+        print "Added"
+
+    if op == 'Cancel':
+        pending = pending_request(request.user, muser)
+        print "Well "
+        print pending
+        if not pending:
+            return HttpResponseRedirect("/")
+
+        pending.delete()
+        print "Removed"
+
+    if op == 'Accept':
+        pending = pending_request(muser, request.user)
+        
+        if not pending or pending.status:
+            return HttpResponseRedirect("/")
+
+        print "Changing to %s" % op
+        pending.status = 1
+        request.user.friends.add(muser.get_profile())
+        muser.friends.add(request.user.get_profile())
+        request.user.save()
+        muser.save()
+        pending.save()
+
+    if op == 'Remove':
+        if not friends(muser, request.user):
+            return HttpResponseRedirect("/")
+
+        req = pending_request(request.user, muser)
+        if req:
+            req.delete()
+        req = pending_request(muser, request.user)
+        if req:
+            req.delete()
+
+        muser.friends.remove(request.user.get_profile())
+        request.user.friends.remove(muser.get_profile())
+
+
+
+    return HttpResponseRedirect("/")
 

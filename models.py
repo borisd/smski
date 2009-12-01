@@ -20,8 +20,7 @@ class PhoneVerification(models.Model):
 
 FRIEND_REQUEST_STATUS = (
     (0, 'Pending'),
-    (1, 'Rejected'),
-    (2, 'Accepted'),
+    (1, 'Accepted'),
 )    
 
 class FriendRequest(models.Model):

@@ -19,9 +19,9 @@ class PhoneVerification(models.Model):
     date = models.DateTimeField('Time when code was sent')
 
 FRIEND_REQUEST_STATUS = (
-    (0, ''),
-    (1, ''),
-    (2, ''),
+    (0, 'Pending'),
+    (1, 'Rejected'),
+    (2, 'Accepted'),
 )    
 
 class FriendRequest(models.Model):
