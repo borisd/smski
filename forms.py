@@ -43,7 +43,7 @@ def send_verification(phone, user):
         old_ver[0].delete()
 
     print "PV: Created new and sending notification"
-    pv = PhoneVerification(user=user, phone=phone, code=CreateCode(), attempt=1, date=datetime.datetime.now())
+    pv = PhoneVerification(user=user, phone=phone, code=CreateCode().lower(), attempt=1, date=datetime.datetime.now())
     pv.save()
     SMS(user, "Your verification code is: %s" % pv.code)
 
@@ -59,7 +59,7 @@ def check_verification(user, code):
     if pv.phone != user.get_profile().phone:
         return 'Verification code for a phone different then what user has'
 
-    if pv.code != code:
+    if pv.code != code.lower():
         return 'Incorrect code'
 
     pv.delete()
@@ -68,8 +68,11 @@ def check_verification(user, code):
 
 class SetPhoneForm(forms.Form):
     def __init__(self, user, dict = {}):
+        if dict:
+            forms.Form.__init__(self, dict)
+        else:
+            forms.Form.__init__(self)
         self.user = user
-        forms.Form.__init__(self, dict)
 
     phone = forms.CharField(label='Cell phone number')
 
@@ -101,10 +104,13 @@ class SetPhoneForm(forms.Form):
         return clean_phone[0:3] + '-' + clean_phone[3:]
 
 
-class VerifyPhoneFrom(forms.Form):
+class VerifyPhoneForm(forms.Form):
     def __init__(self, user, dict = {}):
         self.user = user
-        forms.Form.__init__(self, dict)
+        if dict:
+            forms.Form.__init__(self, dict)
+        else:
+            forms.Form.__init__(self)
 
     code = forms.CharField(label='Verification code')
 

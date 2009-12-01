@@ -7,7 +7,7 @@ from django.contrib import auth
 
 # App specific imports
 from myproject.smski.models import Profile
-from myproject.smski.forms import SignUpForm, SetPhoneForm, VerifyPhoneFrom
+from myproject.smski.forms import SignUpForm, SetPhoneForm, VerifyPhoneForm
 
 # Utilities
 import datetime, re
@@ -48,13 +48,15 @@ def set_phone(request, user_id):
     profile = user.get_profile()
 
     if request.method == 'POST':
+        print 'Set phone, with POST'
         form = SetPhoneForm(user, request.POST)
         if form.is_valid():
             return HttpResponseRedirect("/verify_phone/%s/" % user_id)
     else:
+        print 'Set phone, first time'
         form = SetPhoneForm(user)
 
-    return render_to_response('generic_form.html', { 'form' : form, })
+    return render_to_response('set_phone.html', { 'form' : form['phone'], 'user' : user, })
 
 @login_required
 def verify_phone(request, user_id):
@@ -62,12 +64,14 @@ def verify_phone(request, user_id):
     profile = user.get_profile()
 
     if request.method == 'POST':
-        form = VerifyPhoneFrom(user, request.POST)
+        form = VerifyPhoneForm(user, request.POST)
         if form.is_valid():
+            profile.verified = True;
+            profile.save()
             return HttpResponseRedirect("/")
     else:
-        form = VerifyPhoneFrom(user)
+        form = VerifyPhoneForm(user)
 
-    return render_to_response('generic_form.html', { 'form' : form, })
+    return render_to_response('verify_phone.html', { 'form' : form, 'user': user, })
 
 
