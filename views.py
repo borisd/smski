@@ -50,7 +50,7 @@ def index(request):
     msg_list = (SMSMessage.objects.filter(by=user) | SMSMessage.objects.filter(to=user)).distinct().order_by('date')[:100]
     msg_data = map(msg_info, msg_list)
 
-    data = sorted(chain(freq_data, msg_data))
+    data = sorted(chain(freq_data, msg_data))[:40]
 
 
     return render_to_response("index.html", {

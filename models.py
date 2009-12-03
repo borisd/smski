@@ -57,3 +57,8 @@ class SMSMessage(models.Model):
     message = models.CharField(max_length=200) # We need to clean this from hacks
     status = models.IntegerField(choices=SMS_STATUSES)
 
+class SMSTracker(models.Model):
+    date = models.DateTimeField()
+    data = models.CharField(max_length=4000)
+    parsed = models.BooleanField(default=False)
+
