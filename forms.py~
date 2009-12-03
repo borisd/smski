@@ -122,4 +122,23 @@ class VerifyPhoneForm(forms.Form):
             raise forms.ValidationError(error)
 
         return code
-        
+
+class SendMessageForm(forms.Form):
+    message = forms.CharField(max_length=50, label='Message to send')
+    recipients = forms.ModelMultipleChoiceField(queryset=User.objects.all(), widget=forms.CheckboxSelectMultiple())
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user')
+        forms.Form.__init__(self, *args, **kwargs)
+#        self.fields['recipients'].queryset = self.user.friends.all()
+
+
+    def clean_recipients(self):
+        rcp = self.cleaned_data['recipients']
+        if len(rcp) > 10:
+            raise forms.ValidationError('Cannot send to more then 10 people')
+
+        return rcp
+
+    def action(self):
+        send_message(self.user, self.cleaned_data['message'], self.cleaned_data['recipients'])

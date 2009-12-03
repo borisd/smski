@@ -2,10 +2,11 @@
 
 {% block content %}
 <a href="/user_list"/>See all users</a>
+<a href="/send_message/">Send SMS</a>
 <ul>
     {% for item in data %}
     <li>
-    <h5>{{ item.date|timesince }} ago </h5>{{ item.str|safe }}
+    <h5 style="display:inline">{{ item.date|timesince }} ago </h5>{{ item.str|safe }}
     </li>
     {% endfor %}
 </ul>

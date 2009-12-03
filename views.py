@@ -6,12 +6,13 @@ from django.contrib.auth.models import User
 from django.contrib import auth
 
 # App specific imports
-from myproject.smski.models import Profile, FriendRequest
-from myproject.smski.forms import SignUpForm, SetPhoneForm, VerifyPhoneForm
+from myproject.smski.models import *
+from myproject.smski.forms import *
 from myproject.smski.relations import *
 
 # Utilities
 import datetime, re
+from itertools import chain
 
 @login_required
 def index(request):
@@ -32,17 +33,25 @@ def index(request):
     # Accepted    freq2   freq4  
     FMap = ((freq1, freq3), (freq2, freq4))
 
-    def full_info(freq):
+    def freq_info(freq):
         return {
                 'date': freq.date, 
                 'str':FMap[freq.status][freq.to != user](freq),
                 }
+    def msg_info(msg):
+        return { 
+                'date': msg.date,
+                'str': "SMS from %s to %s: %s" % (msg.by, msg.to, msg.message)
+               }
 
-    list = FriendRequest.objects.filter(by=user) | FriendRequest.objects.filter(to=user)
-    list.distinct()
-    list.order_by('-date')
+    freq_list = (FriendRequest.objects.filter(by=user) | FriendRequest.objects.filter(to=user)).distinct().order_by('date')[:100]
+    freq_data = map(freq_info, freq_list)
 
-    data = map(full_info, list)
+    msg_list = (SMSMessage.objects.filter(by=user) | SMSMessage.objects.filter(to=user)).distinct().order_by('date')[:100]
+    msg_data = map(msg_info, msg_list)
+
+    data = sorted(chain(freq_data, msg_data))
+
 
     return render_to_response("index.html", {
         'data': data,
@@ -117,15 +126,10 @@ def users(request):
         profile = muser.get_profile()
         id = muser.id
         nick = muser.username
-        req_id = 0
 
-        rel = relation(user, muser)
-        if rel == REL_A2B:
-            req_id = muser.freqto.filter(by=user)[0].id
-        elif rel == REL_B2A:
-            req_id = user.freqto.filter(by=muser)[0].id
+        rel, req = relation_and_request(user, muser)
             
-        return { 'id':id, 'nick':nick, 'relation':rel, 'reqid':req_id }
+        return { 'id':id, 'nick':nick, 'relation':rel, 'reqid': req.id if req else "" }
     
     data = map(full_info, User.objects.all().order_by('username'))
 
@@ -176,13 +180,10 @@ def friend_request(request, user_id):
         pending.save()
 
     if op == 'Remove':
-        if not friends(muser, request.user):
+        rel, req = relation_and_request(muser, request.user)
+        if not rel == REL_FRIENDS:
             return HttpResponseRedirect("/")
 
-        req = pending_request(request.user, muser)
-        if req:
-            req.delete()
-        req = pending_request(muser, request.user)
         if req:
             req.delete()
 
@@ -192,4 +193,29 @@ def friend_request(request, user_id):
 
 
     return HttpResponseRedirect("/")
+
+@login_required
+def send(request):
+    user = request.user
+    profile = user.get_profile()
+
+    if request.method == 'POST':
+        form = SendMessageForm(request.POST, user=user)
+        if form.is_valid():
+            form.action()
+            return HttpResponseRedirect("/")
+    else:
+        form = SendMessageForm(user=user)
+
+    msg = form['message']
+    msg_html = msg.as_textarea(attrs={'rows':3, 'cols':30})
+    rec = form['recipients']
+    rec_html = rec.as_widget()
+
+    return render_to_response('send_message.html', { 
+        'msg' : msg,
+        'msg_html' : msg_html,
+        'rec' : rec,
+        'rec_html' : rec_html,
+        'user': user, })
 

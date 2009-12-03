@@ -30,3 +30,30 @@ class FriendRequest(models.Model):
     date = models.DateTimeField('Time request was sent/accepted')
     status = models.IntegerField(choices=FRIEND_REQUEST_STATUS)
 
+SMS_REPLY_TYPES = (
+    (0, 'To SMS'),
+    (1, 'To email'),
+    (2, 'To both'),
+)        
+
+class SMSSession(models.Model):
+    ''' Wrap a single session (multiple SMS) '''
+    date = models.DateTimeField('Time session was created')
+    reply_type = models.IntegerField(choices=SMS_REPLY_TYPES)
+    user = models.ForeignKey(User, related_name='sms_sessions')
+
+SMS_STATUSES = (
+    (0, 'Sent'),
+    (1, 'Received'),
+    (2, 'Read'),
+    (3, 'Forwarded'),
+)        
+class SMSMessage(models.Model):
+    ''' Singe SMS message '''
+    date = models.DateTimeField('Time sms was sent/recieved')
+    by = models.ForeignKey(User, related_name='smsby')
+    to = models.ForeignKey(User, related_name='smsto')
+    session = models.ForeignKey(SMSSession)
+    message = models.CharField(max_length=200) # We need to clean this from hacks
+    status = models.IntegerField(choices=SMS_STATUSES)
+
