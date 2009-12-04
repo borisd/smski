@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="info"> Enter the phone number to use </h2>
+<p class="notice"> We will send a verification code, to make sure you own the phone</p>
+
+<br>
+
+<div class="center">
+<form action="" method="post">
+    <h3 class="caption">Phone number:</h3>
+    {{ form }}
+    <p class='error'> {{ form.errors }} </p>
+    <input type="submit" id="send_code" value="Send Verification">
+    <p class="notice">Will send a SMS to the specified phone number !</p>
+</form>
+</div>
+{% endblock %}
+

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form action="" method="post">
+    <h2>Send a message </h2>
+    <p class="note"> Already sent {{total_sms}}/30 sms</p>
+    <br>
+
+    <table border=0 class="send_msg">
+        <tr>
+            <th class="note">
+                Enter text to send, max 50 chars
+            </th>
+            <th class="note">
+                Select users, max 10
+            </th>
+        </tr>
+        <tr>   
+            <td class="send_msg_text">
+                {{ msg_html }}
+                {% if msg.errors %}
+                {{ msg.errors }}
+                {% endif %}
+            </td>
+            <td class="send_msg_users">
+                {{ rec_html }}
+                {% if rec.errors %}
+                {{ rec.errors }}
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+    <p class='error'> {{ form.errors }} </p>
+    <input type="submit" value="Send">
+</form>
+{% endblock %}
+

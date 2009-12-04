@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="info center">Add / Remove friends</h2>
+<p class="note">Adding a user sends him a Friend Request which he will need to accept before you can SMS him !</p>
+<table class="user_list" border=0>
+    <tr>
+        <th class="note">
+            Username
+        </th>
+        <th>
+        </th>
+        <th class="note note_right" colspan=1>
+            Action
+        </th>
+    </tr>
+
+    {% for x in data %}
+    <tr>
+        <td class="user_list_user"> <p class="user"> {{ x.nick }} </p> </td>
+        <td class="user_list_status">
+            <p class="info">
+            {% ifequal x.relation 1 %}
+            {% endifequal %}
+
+            {% ifequal x.relation 3 %}
+            Pending friend request
+            {% endifequal %}
+
+            {% ifequal x.relation 4 %}
+            Pending friend request
+            {% endifequal %}
+            </p>
+        </td>
+        <td class="user_list_action">
+            <form action="/friend_request/{{x.id}}/" method="post" style="display:inline">
+                {% ifequal x.relation 0 %}
+                <p class="info" style="text-align:center">
+                Its you !
+                </p>
+                {% endifequal %}
+
+                {% ifequal x.relation 1 %}
+                <input type="submit" value="Remove" name="Action"/>
+                {% endifequal %}
+
+                {% ifequal x.relation 2 %}
+                <input type="submit" value="Add" name="Action"/>
+                {% endifequal %}
+
+                {% ifequal x.relation 3 %}
+                <input type="submit" value="Cancel" name="Action"/>
+                {% endifequal %}
+
+                {% ifequal x.relation 4 %}
+                <input type="submit" value="Accept" name="Action"/>
+                {% endifequal %}
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
+
