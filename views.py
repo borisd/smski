@@ -9,6 +9,7 @@ from django.contrib import auth
 from myproject.smski.models import *
 from myproject.smski.forms import *
 from myproject.smski.relations import *
+from myproject.smski.utils import *
 
 # Utilities
 import datetime, re
@@ -18,44 +19,48 @@ from itertools import chain
 def index(request):
     user = request.user
 
-    user_link   = lambda by:   '''<a href="/profile/%s">%s</a>''' % (by.id, by)
-    freq_accept = lambda freq: '''<a href="/friend_request/accept/%s">accept</a>''' % (freq.id)
-    freq_reject = lambda freq: '''<a href="/friend_request/reject/%s">reject</a>''' % (freq.id)
-    freq_cancel = lambda freq: '''<a href="/friend_request/cancel/%s">cancel</a>''' % (freq.id)
+    def user_html(us, other):
+        if us == other:
+            return '<span class="user_us"> You </span>' #% other
+        return '<span class="user"> %s </span>' % other
 
-    freq1 = lambda freq: ("Friend request from %s (%s/%s)" % (user_link(freq.by), freq_accept(freq), freq_reject(freq)))
-    freq2 = lambda freq: ("You accepted %s's friend request !" % (user_link(freq.by)))
-    freq3 = lambda freq: ("You sent friend request to %s (%s)" % (user_link(freq.to), freq_cancel(freq)))
-    freq4 = lambda freq: ("%s accepted your friend request !" % (user_link(freq.to)))
+    def info_html(message):
+        return '<span class="info">%s</span>' % message
 
-    #             ToMe    FromME
-    # Pending     freq1   freq3
-    # Accepted    freq2   freq4  
-    FMap = ((freq1, freq3), (freq2, freq4))
+    def build_html(user, by, to, message):
+        return "%s%s%s" % (user_html(user, by), info_html(message), user_html(user, to))
 
     def freq_info(freq):
-        return {
-                'date': freq.date, 
-                'str':FMap[freq.status][freq.to != user](freq),
-                }
-    def msg_info(msg):
+        message = 'sent a friend request to' if freq.status == 0 else 'accepted friend request from'
         return { 
-                'date': msg.date,
-                'str': "SMS from %s to %s: %s" % (msg.by, msg.to, msg.message)
+                'date': freq.date,
+                'html': build_html(user, freq.by, freq.to, message), 
                }
 
-    freq_list = (FriendRequest.objects.filter(by=user) | FriendRequest.objects.filter(to=user)).distinct().order_by('date')[:100]
+    def msg_info(msg):
+        message = 'sent a SMS to'
+        return { 
+                'date': msg.date,
+                'html': build_html(user, msg.by, msg.to, 'sent a sms to'), 
+                'message': msg.message,
+               }
+        
+
+    freq_list = (FriendRequest.objects.filter(by=user) | FriendRequest.objects.filter(to=user)).distinct()[:50]
     freq_data = map(freq_info, freq_list)
 
-    msg_list = (SMSMessage.objects.filter(by=user) | SMSMessage.objects.filter(to=user)).distinct().order_by('date')[:100]
+    msg_list = (SMSMessage.objects.filter(by=user) | SMSMessage.objects.filter(to=user)).distinct()[:50]
     msg_data = map(msg_info, msg_list)
 
-    data = sorted(chain(freq_data, msg_data))[:40]
+    data = sorted(chain(freq_data, msg_data), reverse=True)[:50]
 
-
+    pending = len(FriendRequest.objects.filter(to=user))
+    sent_sms = get_sms_last_24h(user)
     return render_to_response("index.html", {
         'data': data,
-        'user': request.user,
+        'user': user,
+        'pending': pending,
+        'sent_sms': sent_sms,
         })
 
 
@@ -115,7 +120,9 @@ def verify_phone(request, user_id):
     else:
         form = VerifyPhoneForm(user)
 
-    return render_to_response('verify_phone.html', { 'form' : form, 'phone' : profile.phone, 'user': user, })
+    nice_phone = "%s" % profile.phone
+    nice_phone = "0%s-%s" % (nice_phone[0:2], nice_phone[2:])
+    return render_to_response('verify_phone.html', { 'form' : form, 'phone' : nice_phone, 'user': user, })
 
 @login_required
 def users(request):
@@ -141,6 +148,8 @@ def friend_request(request, user_id):
 
     if not request.method == 'POST':
         return HttpResponseRedirect("/")
+
+    next_page = request.POST.get("next", "/")
 
     print request.POST
 
@@ -192,7 +201,7 @@ def friend_request(request, user_id):
 
 
 
-    return HttpResponseRedirect("/")
+    return HttpResponseRedirect("/user_list/")
 
 @login_required
 def send(request):
@@ -212,10 +221,13 @@ def send(request):
     rec = form['recipients']
     rec_html = rec.as_widget()
 
+    total_sms = get_sms_last_24h(user)
+
     return render_to_response('send_message.html', { 
         'msg' : msg,
         'msg_html' : msg_html,
         'rec' : rec,
         'rec_html' : rec_html,
+        'total_sms' : total_sms,
         'user': user, })
 

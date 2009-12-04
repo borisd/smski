@@ -14,16 +14,21 @@
     <body>
         <div class="top_header">
             <div class="nav_menu">
+                <p class="nav_menu">
                 {% if user.is_authenticated %}
-                Logged in as: <span id="user_name"><a href="/profile/{{user.id}}/">{{ user }}</a></span>
-                <a href="/accounts/logout">(logout)</a>
+                <a class="nav_menu" href="/">Home</a>
+                <a class="nav_menu" href="/user_list/">Users</a>
+                <a class="nav_menu" href="/send_message/">SendSMS</a>
+                <a class="nav_menu go_right" href="/accounts/logout">Logout</a>
                 {% else %}
-                <a href="/">Login</a> / <a href="/new_user/">Sign up</a>
+                <a class="nav_menu" href="/">Login</a> 
+                <a class="nav_menu go_right" href="/new_user/">Sign up</a>
                 {% endif %}
+                </p>
             </div>
-        </div>
-        <div class="main_block">
-            {% block content %}<h1>NO CONTENT BLOCK !!</h1>{% endblock %}
+            <div class="main_block">
+                {% block content %}<h1>NO CONTENT BLOCK !!</h1>{% endblock %}
+            </div>
         </div>
     </body>
 </html>

@@ -1,9 +1,11 @@
 from django import forms
 from django.contrib.auth.models import User
+from django.utils.safestring import mark_safe
 
 from myproject.smski.models import Profile, PhoneVerification
-from myproject.smski.utils import Dictionary
+from myproject.smski.utils import *
 from myproject.smski.sms import SMS
+from myproject.smski.messages import send_message
 
 import re, random, datetime
 
@@ -39,6 +41,10 @@ def send_verification(phone, user):
 
     # TODO: Handle flooding of verifications
     if old_ver:
+        time_diff = (datetime.datetime.now() - old_ver[0].date).seconds
+        if time_diff < 60 * 5:
+            return "Please give the sms %d more minutes to get there" % (5 - time_diff / 60)
+
         print "PV: Old pv found, delete it"
         old_ver[0].delete()
 
@@ -90,13 +96,20 @@ class SetPhoneForm(forms.Form):
 
         phone_numeric = int(clean_phone, 10)
 
+        # Prevent two users using the same phone
+        query = Profile.objects.filter(phone=phone_numeric)
+        if query and query[0].verified:
+            raise forms.ValidationError("Number already registered by %s" % query[0].user)
+
         profile = self.user.get_profile()
 
+        # Update phone
         if phone_numeric != profile.phone:
-            profile.profile = phone_numeric
+            profile.phone = phone_numeric
             profile.verified = False
             profile.save()
 
+        # Start verification process
         error = send_verification(profile.phone, profile.user)
         if error:
             raise forms.ValidationError(error)
@@ -112,7 +125,7 @@ class VerifyPhoneForm(forms.Form):
         else:
             forms.Form.__init__(self)
 
-    code = forms.CharField(label='Verification code')
+    code = forms.CharField()
 
     def clean_code(self):
         code = self.cleaned_data['code']
@@ -121,22 +134,31 @@ class VerifyPhoneForm(forms.Form):
         if error:
             raise forms.ValidationError(error)
 
+        send_message(User.objects.filter(pk=1)[0], "Welcome, add some friends and start SMSing !", [self.user])
         return code
+
+class CheckboxSelectMultipleP(forms.CheckboxSelectMultiple):
+    def render(self, *args, **kwargs):
+        output = super(CheckboxSelectMultipleP, self).render(*args, **kwargs)
+        return mark_safe(output.replace(u'<li>', u'<li class="send_msg user">').replace(u'<ul>', u'<ul class="send_msg">'))
 
 class SendMessageForm(forms.Form):
     message = forms.CharField(max_length=50, label='Message to send')
-    recipients = forms.ModelMultipleChoiceField(queryset=User.objects.all(), widget=forms.CheckboxSelectMultiple())
+    recipients = forms.ModelMultipleChoiceField(queryset='', widget=CheckboxSelectMultipleP())
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user')
         forms.Form.__init__(self, *args, **kwargs)
-#        self.fields['recipients'].queryset = self.user.friends.all()
+        self.fields['recipients'].queryset = self.user.get_profile().friends.all()
 
 
     def clean_recipients(self):
         rcp = self.cleaned_data['recipients']
         if len(rcp) > 10:
             raise forms.ValidationError('Cannot send to more then 10 people')
+
+        if len(rcp) + get_sms_last_24h(self.user) > 30:
+            raise forms.ValidationError('Cannot send more then 30 SMS a day')
 
         return rcp
 

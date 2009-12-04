@@ -1,14 +1,25 @@
 {% extends "base.html" %}
 
 {% block content %}
-<a href="/user_list"/>See all users</a>
-<a href="/send_message/">Send SMS</a>
-<ul>
+<h1 class="user"> {{ user }} </h1>
+<p class="note"> You have <strong>{{ pending }}</strong> pending friend request{{ pending|pluralize }} </p>
+<p class="note"> and you have sent <strong>{{ sent_sms }}</strong> message{{ sent_sms|pluralize }} today (out of 30)</p>
+<table class="index" border=0>
     {% for item in data %}
-    <li>
-    <h5 style="display:inline">{{ item.date|timesince }} ago </h5>{{ item.str|safe }}
-    </li>
+    <tr class="index">
+        <td class="index">
+            {{ item.html|safe }}
+            {% if item.message %}
+            <div class="message">
+                {{ item.message }}
+            </div>
+            {% endif %}
+            <div class="note go_right">
+                {{ item.date|timesince }} ago 
+            </div>
+        </td>
+    </tr>
     {% endfor %}
-</ul>
+</table>
 {% endblock %}
 
