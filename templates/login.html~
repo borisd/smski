@@ -3,24 +3,33 @@
 <h2 class="info"> Enter your Login information </h2>
 <p class="notice"> Or register a new user !</p>
 <br>
-{% if form.errors %}
-<p class="error">Incorrect username or password</p>
-{% endif %}
 
-<div class="center">
-<form class="main" action='.' method='post'>
-    <h3>
-        <label for="username">User name:</label>
-        <input type="text" name="username" value="" id="username">
-        <br>
-        <label for="password">Password:</label>
-        <input type="password" name="password" value="" id="password">
-        <br>
-        <input type="submit" value="login" />
-        <input type="hidden" name="next" value="{{ next|escape }}" />
-    </h3>
-</form>
-</div>
+<table style="width:90%" border=0>
+    <tr>
+        <td>
+            <div class="center">
+                <form class="main" action='.' method='post'>
+                    <h3 class="caption">
+                        {% if form.errors %} <p class="error">Incorrect username or password</p> {% endif %}
+                        <p class="note">User name:</p>
+                        <input type="text" name="username" value="" id="username">
+                        <br>
+                        <p class="note">Password:</p>
+                        <input type="password" name="password" value="" id="password">
+                        <br>
+                        <input type="submit" value="Login" class="signin" />
+                        <input type="hidden" name="next" value="{{ next|escape }}" />
+                    </h3>
+                </form>
+            </div>
+        </td>
+        <td>
+            <div class="center">
+                <a href="/new_user/" class="signup_button">Sign Up</a>
+            </div>
+        </td>
+    </tr>
+</table>
 
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 <script type="text/javascript">
@@ -31,7 +40,7 @@
                 });
             });
 
-        </script>
+</script>
 
-        {% endblock %}
+{% endblock %}
 

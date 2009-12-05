@@ -130,7 +130,7 @@ def verify_phone(request, user_id):
         return HttpResponseRedirect("/")
 
     profile = user.get_profile()
-
+    
     if request.method == 'POST':
         form = VerifyPhoneForm(user, request.POST)
         if form.is_valid():

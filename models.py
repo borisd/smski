@@ -10,7 +10,7 @@ class Profile(models.Model):
     friends = models.ManyToManyField(User, related_name='friends')
 
     def __unicode__(self):
-        return self.user
+        return u"Profile %s" % self.user
 
 class PhoneVerification(models.Model):
     ''' Model to verify user owns the phone number '''
@@ -21,7 +21,7 @@ class PhoneVerification(models.Model):
     date = models.DateTimeField('Time when code was sent')
 
     def __unicode__(self):
-        return "Verification %s [%s]" % (self.user, self.code)
+        return u"Verification %s [%s]" % (self.user, self.code)
 
 FRIEND_REQUEST_STATUS = (
     (0, 'Pending'),
@@ -36,7 +36,7 @@ class FriendRequest(models.Model):
     status = models.IntegerField(choices=FRIEND_REQUEST_STATUS)
 
     def __unicode__(self):
-        return 'FriendReq %s -> %s' % (self.by, self.to)
+        return u'FriendReq %s -> %s' % (self.by, self.to)
 
 SMS_REPLY_TYPES = (
     (0, 'To SMS'),
@@ -51,7 +51,7 @@ class SMSSession(models.Model):
     user = models.ForeignKey(User, related_name='sms_sessions')
 
     def __unicode__(self):
-        return 'SMSSes %s' % self.user
+        return u'SMSSes %s' % self.user
 
 SMS_STATUSES = (
     (0, 'Sent'),
@@ -69,7 +69,7 @@ class SMSMessage(models.Model):
     status = models.IntegerField(choices=SMS_STATUSES)
 
     def __unicode__(self):
-        return 'SMS %s -> %s' % (self.by, self.to)
+        return u'SMS %s -> %s' % (self.by, self.to)
 
 class SMSTracker(models.Model):
     date = models.DateTimeField()

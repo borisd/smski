@@ -163,11 +163,6 @@ p.info {
 }
 td.user_list_user {
 }
-input[type=submit] {
-    width:80px;
-    height:25px;
-    font-weight:bold;
-}
 input#send_code {
     width:160px;
     height:30px;
@@ -237,17 +232,86 @@ h1, h2, h3, h4 {
     display: inline;
 }
 input[type=password], input[type=text] {
-    width:100px;
-    height:20px;
-    margin:10px;
+    -moz-border-radius-bottomleft:4px;
+    -moz-border-radius-bottomright:4px;
+    -moz-border-radius-topleft:4px;
+    -moz-border-radius-topright:4px;
+    border:1px solid #AACCEE;
+    font-size:13px;
+    margin:0 0 5px;
+    padding:5px;
+    width:203px;
+}
+input[type=submit] {
+    -moz-background-clip:border;
+    -moz-background-inline-policy:continuous;
+    -moz-background-origin:padding;
+    -moz-border-radius-bottomleft:4px;
+    -moz-border-radius-bottomright:4px;
+    -moz-border-radius-topleft:4px;
+    -moz-border-radius-topright:4px;
+    background:#3399DD url(http://s.twimg.com/a/1259882278/images/bg-btn-blue.png) repeat-x scroll 0 0;
+    border:1px solid #3399DD;
+    color:#FFFFFF;
+    font-size:15px;
+    font-weight:bold;
+    margin:0 5px 0 0;
+    padding:4px 10px 5px;
+    font-family:"Lucida Grande",Arial,Sans-serif;
     font-size-adjust:none;
+    font-style:normal;
+    font-variant:normal;
+    line-height:16px;
+    height:30px;
+}
+
+.extra_margin {
+    margin:6px;
+}
+
+input[type=submit]:hover {
+    border:1px solid rgb(100, 0, 130);
+}
+
+input[type=submit]:active {
+    background-image:none !important;
+    outline-color:-moz-use-text-color !important;
+    outline-style:none !important;
+    outline-width:medium !important;
+    text-shadow:none !important;
+}
+
+a.signup_button:hover, a.signup_button:focus {
+    background-position:0 -5px;
+    color:#111111;
+}
+a.signup_button {
+    -moz-background-clip:border;
+    -moz-background-inline-policy:continuous;
+    -moz-background-origin:padding;
+    -moz-border-radius-bottomleft:5px;
+    -moz-border-radius-bottomright:5px;
+    -moz-border-radius-topleft:5px;
+    -moz-border-radius-topright:5px;
+    -x-system-font:none;
+    background:#99CC22 url(http://s.twimg.com/a/1259882278/images/bg-btn-signup.png) repeat-x scroll 0 0;
+    border:1px solid #DDFF66;
+    color:#333333;
+    display:block;
+    font-family:Helvetica,Arial,Sans-serif;
+    font-size:18px;
+    font-size-adjust:none;
+    font-stretch:normal;
     font-style:normal;
     font-variant:normal;
     font-weight:bold;
     line-height:normal;
-    color:#2276BB;
+    outline-color:-moz-use-text-color;
+    outline-style:none;
+    outline-width:medium;
+    padding:8px 10px;
+    text-align:center;
     text-decoration:none;
-    font-family:'Lucida Grande',sans-serif;
-    margin-left:4px;
+    text-shadow:0 1px 0 #DDFF66;
+    margin-bottom:25px;
 }
-

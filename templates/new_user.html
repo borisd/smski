@@ -1,20 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
-<h2 class="info"> Create new user </h2>
+<h2 class="info"> Create a new user </h2>
 <p class="notice"> Your username will be the one displayed in SMS messages</p>
+<br>
 
-
-{% if form.errors %}
-    <p style="color:red;">
-        Please correct the error{{ form.errors|pluralize }} below
-    </p>
-{% endif %}
-
+<div class="center">
 <form action="" method="post">
     <table>
-        {{ form }}
+        <p class="note">Username</p>
+        <div> {{ form.username }} </div>
+        <p class="error"> {% for error in form.username.errors %} {{ error }} {% endfor %} </p>
+        <p class="note">Password</p>
+        <div> {{ form.password }} </div>
+        <p class="error"> {% for error in form.password.errors %} {{ error }} {% endfor %} </p>
+        <p class="note">Retype Password</p>
+        <div> {{ form.password2}} </div>
+        <p class="error"> {% for error in form.password2.errors %} {{ error }} {% endfor %} </p>
     </table>
-    <input type="submit" value="Submit">
+    <input type="submit" value="Register" class="signin extra_margin">
 </form>
+</div>
 {% endblock %}
 
