@@ -2,18 +2,19 @@ from myproject.smski.models import *
 from django.core.mail import send_mail
 
 from datetime import datetime
+import logging as log
 
 def send_mail_message(message, by, to):
-        print "Message [%s] => [%s] : [%s]" % (by, to, message)
-        send_mail('', message, by, ['boris@dinkevich.com'])
-#        send_mail('', message, by, [to])
+    log.info('Message [%s] => [%s] : [%s]' % (by, to, message))
+#    send_mail('', message, by, ['boris@dinkevich.com'])
+#    send_mail('', message, by, [to])
 
 def send_message(user, message, to_list):
     ses = SMSSession(user=user, date=datetime.now(), reply_type=0)
     ses.save()
 
     for to in to_list:
-        print "%d:  --- SMS --- [%s] -> [%s] : %s" % (ses.id, user, to, message)
+        log.info("%d:  --- SMS --- [%s] -> [%s] : %s" % (ses.id, user, to, message))
         msg = SMSMessage(date=datetime.now(), by=user, to=to, session=ses, message=message, status=0)
         msg.save()
 

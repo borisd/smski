@@ -9,6 +9,8 @@ class Profile(models.Model):
     verified = models.BooleanField('Phone verified', default=False)
     friends = models.ManyToManyField(User, related_name='friends')
 
+    def __unicode__(self):
+        return self.user
 
 class PhoneVerification(models.Model):
     ''' Model to verify user owns the phone number '''
@@ -17,6 +19,9 @@ class PhoneVerification(models.Model):
     code = models.CharField('Verification code sent', max_length=16)
     attempt = models.IntegerField('Current attempt number')
     date = models.DateTimeField('Time when code was sent')
+
+    def __unicode__(self):
+        return "Verification %s [%s]" % (self.user, self.code)
 
 FRIEND_REQUEST_STATUS = (
     (0, 'Pending'),
@@ -30,6 +35,9 @@ class FriendRequest(models.Model):
     date = models.DateTimeField('Time request was sent/accepted')
     status = models.IntegerField(choices=FRIEND_REQUEST_STATUS)
 
+    def __unicode__(self):
+        return 'FriendReq %s -> %s' % (self.by, self.to)
+
 SMS_REPLY_TYPES = (
     (0, 'To SMS'),
     (1, 'To email'),
@@ -41,6 +49,9 @@ class SMSSession(models.Model):
     date = models.DateTimeField('Time session was created')
     reply_type = models.IntegerField(choices=SMS_REPLY_TYPES)
     user = models.ForeignKey(User, related_name='sms_sessions')
+
+    def __unicode__(self):
+        return 'SMSSes %s' % self.user
 
 SMS_STATUSES = (
     (0, 'Sent'),
@@ -56,6 +67,9 @@ class SMSMessage(models.Model):
     session = models.ForeignKey(SMSSession)
     message = models.CharField(max_length=200) # We need to clean this from hacks
     status = models.IntegerField(choices=SMS_STATUSES)
+
+    def __unicode__(self):
+        return 'SMS %s -> %s' % (self.by, self.to)
 
 class SMSTracker(models.Model):
     date = models.DateTimeField()

@@ -7,6 +7,7 @@ from myproject.smski.utils import *
 from myproject.smski.messages import send_message
 
 import re, random, datetime
+import logging as log
 
 class SignUpForm(forms.Form):
     username = forms.CharField(max_length=30, min_length=3, label='Username')
@@ -16,6 +17,7 @@ class SignUpForm(forms.Form):
     def clean_username(self):
         username = self.cleaned_data['username']
         if User.objects.filter(username__iexact=username):
+            log.info('User tried to register with %s - already take' % username)
             raise forms.ValidationError('Username already taken')
         return username
 
@@ -33,7 +35,7 @@ def send_verification(phone, user):
         random.seed()
         opts = Dictionary().split(' ')
         code = "%s%d" % (opts[random.randint(0, len(opts)-1)], random.randint(11,99))
-        print "Generated random code [%s]" % code
+        log.info('%s: Generated random code for verification [%s]' % (user, code))
         return code
 
     old_ver = PhoneVerification.objects.filter(user=user)
@@ -42,12 +44,13 @@ def send_verification(phone, user):
     if old_ver:
         time_diff = (datetime.datetime.now() - old_ver[0].date).seconds
         if time_diff < 60 * 5:
+            log.info('%s: User impatient, request ver only after %d seconds' % (user, time_diff))
             return "Please give the sms %d more minutes to get there" % (5 - time_diff / 60)
 
-        print "PV: Old pv found, delete it"
+        log.info('%s: Found old PhoneVerification, delete for now' % (user))
         old_ver[0].delete()
 
-    print "PV: Created new and sending notification"
+    log.info("%s: Created new PhoneVerification and sending notification" % (user))
     pv = PhoneVerification(user=user, phone=phone, code=CreateCode().lower(), attempt=1, date=datetime.datetime.now())
     pv.save()
     send_message(User.objects.filter(username='admin')[0], 'Your code for do.itlater.com is: %s' % pv.code, [user])
@@ -57,14 +60,17 @@ def send_verification(phone, user):
 def check_verification(user, code):
     pv_list = PhoneVerification.objects.filter(user=user)
     if not pv_list:
+        log.warning('%s Checking verification when once was not yet sent' % (user))
         return 'No verification code was sent yet'
 
     pv = pv_list[0]
 
     if pv.phone != user.get_profile().phone:
+        log.warning('%s: Entered verification for different phone %s != %s' % (user, pv.phone, user.get_profile().phone))
         return 'Verification code for a phone different then what user has'
 
     if pv.code != code.lower():
+        log.warning('%s: Incorrect Verification code' % (user))
         return 'Incorrect code'
 
     pv.delete()
@@ -85,12 +91,15 @@ class SetPhoneForm(forms.Form):
         dirty_phone = self.cleaned_data['phone']
         clean_phone = re.sub('[- .\t]', '', dirty_phone)
         if re.sub('[0-9]', '', clean_phone) != '':
+            log.info('%s: Invalid chars in phone: [%s]' % (self.user, clean_phone))
             raise forms.ValidationError("Please use only numbers and '-' in phone number")
 
         if clean_phone[0] != '0' or clean_phone[1] != '5':
+            log.info('%s: Unsupported phone format [%s]' % (self.user, clean_phone))
             raise forms.ValidationError("Only '05x-xxxxxxx' phones are supported")
 
         if len(clean_phone) != 10:
+            log.info('%s: Incorrect number of digits in phone [%s]' % (self.user, clean_phone))
             raise forms.ValidationError("Number should have 10 digits, you entered only %d" % len(clean_phone))
 
         phone_numeric = int(clean_phone, 10)
@@ -98,12 +107,14 @@ class SetPhoneForm(forms.Form):
         # Prevent two users using the same phone
         query = Profile.objects.filter(phone=phone_numeric)
         if query and query[0].verified:
+            log.warning('%s: tried to enter phone %s which belongs to %s' % (self.user, clean_phone, query[0].user))
             raise forms.ValidationError("Number already registered by %s" % query[0].user)
 
         profile = self.user.get_profile()
 
         # Update phone
         if phone_numeric != profile.phone:
+            log.info('%s: changed phone %s -> %s' % (self.user, profile.phone, phone_numeric))
             profile.phone = phone_numeric
             profile.verified = False
             profile.save()
@@ -111,6 +122,7 @@ class SetPhoneForm(forms.Form):
         # Start verification process
         error = send_verification(profile.phone, profile.user)
         if error:
+            log.warning('%s: Phone verification failed [%s]' % (self.user, error))
             raise forms.ValidationError(error)
 
         return clean_phone[0:3] + '-' + clean_phone[3:]
@@ -131,6 +143,7 @@ class VerifyPhoneForm(forms.Form):
 
         error = check_verification(self.user, code)
         if error:
+            log.warning("%s: code verification failed [%s]" % (self.user, error))
             raise forms.ValidationError(error)
 
         send_message(User.objects.filter(pk=1)[0], "Welcome aboard ! Add some friends and start SMSing !", [self.user])
@@ -154,14 +167,17 @@ class SendMessageForm(forms.Form):
     def clean_recipients(self):
         rcp = self.cleaned_data['recipients']
         if len(rcp) > 10:
+            log.info('%s: tried to send to %d people' % (self.user, len(rcp)))
             raise forms.ValidationError('Cannot send to more then 10 people')
 
         if len(rcp) + get_sms_last_24h(self.user) > 30:
+            log.warning('%s: tried to send to more then 30 people' % self.user)
             raise forms.ValidationError('Cannot send more then 30 SMS a day')
 
         for i in rcp:
             last = SMSMessage.objects.filter(by=self.user, to=i, date__gt=(datetime.datetime.now()-datetime.timedelta(minutes=1)))
             if last:
+                log.warning('%s: trying to send too fast' % self.user)
                 raise forms.ValidationError('You can send again to %s in %s seconds' % (i, 60 - (datetime.datetime.now() - last[0].date).seconds))
 
         return rcp

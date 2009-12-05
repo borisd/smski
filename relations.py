@@ -1,5 +1,7 @@
 from myproject.smski.models import Profile, FriendRequest
 
+import logging as log
+
 def pending_request(user_a, user_b):
     reqs = user_b.freqto.filter(by=user_a)
     if reqs:
@@ -17,7 +19,7 @@ class REL:
     SAME = 4
 
 
-def relation_and_request(user_a, user_b):
+def relation_and_request_d(user_a, user_b):
     ''' Map different user relations 
     0 - No relation
     1 - Friends
@@ -43,6 +45,11 @@ def relation_and_request(user_a, user_b):
         return REL.B2A, req
 
     return REL.NONE, req
+
+def relation_and_request(user_a, user_b):
+    a,b = relation_and_request_d(user_a, user_b)
+    log.info('Relation %s : %s is %d' % (user_a, user_b, a))
+    return a,b
 
 def relation(user_a, user_b):
     id, req = relation_and_request(user_a, user_b)

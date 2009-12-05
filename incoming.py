@@ -2,8 +2,11 @@ import sys, email, re, datetime
 from BeautifulSoup import BeautifulSoup
 from myproject.smski.models import *
 from myproject.smski.messages import send_message
+import logging as log
 
 def incoming_mail(string):
+    log.info('Parsing new email')
+
 #    st = SMSTracker(date=datetime.datetime.now(), data=string, parsed=False)
 #    st.save()
 
@@ -11,7 +14,7 @@ def incoming_mail(string):
 
     data = msg.get_payload()
     if not len(data):
-        print 'No payload '
+        log.error('No payload !')
         exit()
 
     soup = BeautifulSoup(data)
@@ -24,30 +27,30 @@ def incoming_mail(string):
     # Find the session 
     session_id = int(re.search('[0-9]+', (msg['To']).split('@')[0]).group(0), 10)
     if not session_id:
-        print "Error getting session id from %s " % msg['To']
+        log.error("Error getting session id from %s " % msg['To'])
         return
 
     ses = SMSSession.objects.filter(pk=session_id)
     if not len(ses):
-        print "Error getting session with id %d" % session_id
+        log.error("Error getting session with id %d" % session_id)
         return
     ses = ses[0]
 
     # Get source user
-    print 'Get user for %s' % msg['From']
+    log.info('Get user for %s' % msg['From'])
     by_num = int(re.sub('[^0-9]', '', msg['From'])[-9:])
     if not by_num:
-        print "Error parsing orig number %s" % msg['From']
+        log.error("Error parsing orig number %s" % msg['From'])
         return
 
     by_prof = Profile.objects.filter(phone=by_num)
     if not len(by_prof):
-        print "Error getting using with num %d" % by_num
+        log.error("Error getting using with num %d" % by_num)
         return
         
     by = by_prof[0].user
 
-    print "Got message from %s to %s [%s]" % (by, ses.user, body)
+    log.info("Got message from %s to %s [%s]" % (by, ses.user, body))
 
     send_message(by, body, [ses.user])
 

@@ -14,10 +14,14 @@ from myproject.smski.utils import *
 # Utilities
 import datetime, re
 from itertools import chain
+import logging as log
 
 @login_required
 def index(request):
     user = request.user
+    
+    log.debug('%s: INDEX request' % user)
+
     if not user.get_profile().verified:
         return HttpResponseRedirect("/verify_phone/%d/" % user.id)
 
@@ -68,6 +72,8 @@ def index(request):
 
 
 def new_user(request):
+    log.debug('New user request')
+
     if request.method == 'POST':
         form = SignUpForm(request.POST)
 
@@ -83,6 +89,9 @@ def new_user(request):
 
             user = auth.authenticate(username=uname, password=upass)
             auth.login(request, user)
+
+            log.info('%s: Added new user' % user)
+
             return HttpResponseRedirect("/set_phone/%d/" % user.id)
     else:
         form = SignUpForm()
@@ -92,14 +101,19 @@ def new_user(request):
 
 @login_required
 def set_phone(request, user_id):
+    log.debug('%s: Set phone request' % request.user)
+
     user = get_object_or_404(User, pk=user_id)
     if user != request.user:
+        log.error('%s: Set phone incorrect user %s != %s' % (user, user, request.user))
         return HttpResponseRedirect("/")
+
     profile = user.get_profile()
 
     if request.method == 'POST':
         form = SetPhoneForm(user, request.POST)
         if form.is_valid():
+            log.info('%s: Successfuly set phone to %s' % (user, profile.phone))
             return HttpResponseRedirect("/verify_phone/%s/" % user_id)
     else:
         form = SetPhoneForm(user)
@@ -108,8 +122,11 @@ def set_phone(request, user_id):
 
 @login_required
 def verify_phone(request, user_id):
+    log.debug('%s: Verify phone request' % request.user)
+
     user = get_object_or_404(User, pk=user_id)
     if user != request.user:
+        log.error('%s: Incorrect user during verify %s != %s' % (user, user, request.user))
         return HttpResponseRedirect("/")
 
     profile = user.get_profile()
@@ -119,6 +136,7 @@ def verify_phone(request, user_id):
         if form.is_valid():
             profile.verified = True;
             profile.save()
+            log.info('%s: Verified phone' % user)
             return HttpResponseRedirect("/")
     else:
         form = VerifyPhoneForm(user)
@@ -129,6 +147,8 @@ def verify_phone(request, user_id):
 
 @login_required
 def users(request):
+    log.debug('%s: User request' % request.user)
+
     user = request.user
     if not user.get_profile().verified:
         return HttpResponseRedirect("/verify_phone/%d/" % user.id)
@@ -148,6 +168,8 @@ def users(request):
 
 @login_required
 def friend_request(request, user_id):
+    log.debug('%s: Friend request' % request.user)
+
     muser = get_object_or_404(User, pk=user_id)
     
     if not request.user.get_profile().verified:
@@ -158,7 +180,7 @@ def friend_request(request, user_id):
 
     next_page = request.POST.get("next", "/")
 
-    print request.POST
+    log.info('%s: Got POST data [%s]' % (request.user, request.POST))
 
     if muser == request.user:
         return HttpResponseRedirect("/")
@@ -166,14 +188,14 @@ def friend_request(request, user_id):
     op = request.POST.get("Action", "")
 
     if op == 'Add':
-        print "Current relation %d"  % (relation(muser, request.user))
+        log.info("%s: Current relation %d"  % (request.user, relation(muser, request.user)))
 
         if relation(muser, request.user) != REL.NONE:
             return HttpResponseRedirect("/")
    
         fr = FriendRequest(by=request.user, to=muser, date=datetime.datetime.now(), status=0)
         fr.save()
-        print "Added"
+        log.info("%s: Added friend request %s -> %s" % (request.user, request.user, muser))
 
     if op == 'Cancel':
         pending = pending_request(request.user, muser)
@@ -181,7 +203,7 @@ def friend_request(request, user_id):
             return HttpResponseRedirect("/")
 
         pending.delete()
-        print "Removed"
+        log.info('%s: Removed friend request %s -> %s' % (request.user, request.user, muser))
 
     if op == 'Accept':
         pending = pending_request(muser, request.user)
@@ -189,7 +211,7 @@ def friend_request(request, user_id):
         if not pending or pending.status:
             return HttpResponseRedirect("/")
 
-        print "Changing to %s" % op
+        log.info('%s: Accepted friend request %s -> %s' % (request.user, muser, request.user))
         pending.status = 1
         request.user.friends.add(muser.get_profile())
         muser.friends.add(request.user.get_profile())
@@ -207,13 +229,16 @@ def friend_request(request, user_id):
 
         muser.friends.remove(request.user.get_profile())
         request.user.friends.remove(muser.get_profile())
-
+        
+        log.info('%s: Removed friend link %s -> %s' % (request.user, request.user, muser))
 
 
     return HttpResponseRedirect("/user_list/")
 
 @login_required
 def send(request):
+    log.debug('%s: Send request' % request.user)
+
     user = request.user
     profile = user.get_profile()
     if not profile.verified:
