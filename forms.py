@@ -160,6 +160,11 @@ class SendMessageForm(forms.Form):
         if len(rcp) + get_sms_last_24h(self.user) > 30:
             raise forms.ValidationError('Cannot send more then 30 SMS a day')
 
+        for i in rcp:
+            last = SMSMessage.objects.filter(by=self.user, to=i, date__gt=(datetime.datetime.now()-datetime.timedelta(minutes=1)))
+            if last:
+                raise forms.ValidationError('You can send again to %s in %s seconds' % (i, 60 - (datetime.datetime.now() - last[0].date).seconds))
+
         return rcp
 
     def action(self):

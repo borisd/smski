@@ -5,7 +5,7 @@ from datetime import datetime
 
 def send_mail_message(message, by, to):
         print "Message [%s] => [%s] : [%s]" % (by, to, message)
-#        send_mail('', message, by, [to])
+        send_mail('', message, by, ['boris@dinkevich.com'])
 #        send_mail('', message, by, [to])
 
 def send_message(user, message, to_list):
@@ -17,6 +17,6 @@ def send_message(user, message, to_list):
         msg = SMSMessage(date=datetime.now(), by=user, to=to, session=ses, message=message, status=0)
         msg.save()
 
-        dynamic_addr = '%s<moshe%d@do.itlater.com>' % (user, ses.id)
+        dynamic_addr = '%s <moshe%d@do.itlater.com>' % (user, ses.id)
         send_mail_message(message, dynamic_addr, "0%s@spikkosms.com" % to.get_profile().phone)
 
