@@ -125,7 +125,7 @@ class VerifyPhoneForm(forms.Form):
         else:
             forms.Form.__init__(self)
 
-    code = forms.CharField()
+    code = forms.CharField(label='')
 
     def clean_code(self):
         code = self.cleaned_data['code']

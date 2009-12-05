@@ -23,9 +23,13 @@
                 {% endif %}
             </td>
             <td class="send_msg_users">
-                {{ rec_html }}
-                {% if rec.errors %}
-                {{ rec.errors }}
+                {% if has_friends %}
+                        {{ rec_html }}
+                    {% if rec.errors %}
+                        {{ rec.errors }}
+                    {% endif %}
+                {% else %}
+                <a href="/user_list/" class="nav_menu">Add friends !</a>
                 {% endif %}
             </td>
         </tr>

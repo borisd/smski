@@ -134,7 +134,7 @@ class VerifyPhoneForm(forms.Form):
         if error:
             raise forms.ValidationError(error)
 
-        send_message(User.objects.filter(pk=1)[0], "Welcome, add some friends and start SMSing !", [self.user])
+        send_message(User.objects.filter(pk=1)[0], "Welcome aboard ! Add some friends and start SMSing !", [self.user])
         return code
 
 class CheckboxSelectMultipleP(forms.CheckboxSelectMultiple):

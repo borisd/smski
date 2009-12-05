@@ -20,40 +20,41 @@
         <td class="user_list_user"> <p class="user"> {{ x.nick }} </p> </td>
         <td class="user_list_status">
             <p class="info">
-            {% ifequal x.relation 1 %}
+            {% ifequal x.relation REL.FRIENDS %}
+            Friend
             {% endifequal %}
 
-            {% ifequal x.relation 3 %}
-            Pending friend request
+            {% ifequal x.relation REL.A2B %}
+            Waiting for user to accept
             {% endifequal %}
 
-            {% ifequal x.relation 4 %}
+            {% ifequal x.relation REL.B2A %}
             Pending friend request
             {% endifequal %}
             </p>
         </td>
         <td class="user_list_action">
             <form action="/friend_request/{{x.id}}/" method="post" style="display:inline">
-                {% ifequal x.relation 0 %}
+                {% ifequal x.relation REL.SAME %}
                 <p class="info" style="text-align:center">
                 Its you !
                 </p>
                 {% endifequal %}
 
-                {% ifequal x.relation 1 %}
+                {% ifequal x.relation REL.FRIENDS %}
                 <input type="submit" value="Remove" name="Action"/>
                 {% endifequal %}
 
-                {% ifequal x.relation 2 %}
+                {% ifequal x.relation REL.NONE %}
                 <input type="submit" value="Add" name="Action"/>
                 {% endifequal %}
 
-                {% ifequal x.relation 3 %}
+                {% ifequal x.relation REL.A2B %}
                 <input type="submit" value="Cancel" name="Action"/>
                 {% endifequal %}
 
-                {% ifequal x.relation 4 %}
-                <input type="submit" value="Accept" name="Action"/>
+                {% ifequal x.relation REL.B2A %}
+                <input type="submit" value="Accept" style="color:blue" name="Action"/>
                 {% endifequal %}
             </form>
         </td>

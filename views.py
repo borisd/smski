@@ -34,7 +34,8 @@ def index(request):
         message = 'sent a friend request to' if freq.status == 0 else 'accepted friend request from'
         return { 
                 'date': freq.date,
-                'html': build_html(user, freq.by, freq.to, message), 
+                'html': build_html(user, freq.by, freq.to, message),
+                'message': '',
                }
 
     def msg_info(msg):
@@ -140,7 +141,7 @@ def users(request):
     
     data = map(full_info, User.objects.all().order_by('username'))
 
-    return render_to_response('user_list.html', { 'data': data, 'user': user, })
+    return render_to_response('user_list.html', { 'data': data, 'REL': REL, 'user': user, })
 
 @login_required
 def friend_request(request, user_id):
@@ -159,7 +160,9 @@ def friend_request(request, user_id):
     op = request.POST.get("Action", "")
 
     if op == 'Add':
-        if relation(muser, request.user) != REL_NONE:
+        print "Current relation %d"  % (relation(muser, request.user))
+
+        if relation(muser, request.user) != REL.NONE:
             return HttpResponseRedirect("/")
    
         fr = FriendRequest(by=request.user, to=muser, date=datetime.datetime.now(), status=0)
@@ -190,7 +193,7 @@ def friend_request(request, user_id):
 
     if op == 'Remove':
         rel, req = relation_and_request(muser, request.user)
-        if not rel == REL_FRIENDS:
+        if not rel == REL.FRIENDS:
             return HttpResponseRedirect("/")
 
         if req:
@@ -222,6 +225,7 @@ def send(request):
     rec_html = rec.as_widget()
 
     total_sms = get_sms_last_24h(user)
+    has_friends = len(profile.friends.all())
 
     return render_to_response('send_message.html', { 
         'msg' : msg,
@@ -229,5 +233,6 @@ def send(request):
         'rec' : rec,
         'rec_html' : rec_html,
         'total_sms' : total_sms,
+        'has_friends' : has_friends, 
         'user': user, })
 

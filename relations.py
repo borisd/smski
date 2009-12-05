@@ -9,11 +9,12 @@ def pending_request(user_a, user_b):
 def friends(user_a, user_b):
     return user_a.friends.filter(user=user_b)
 
-REL_SAME = 0
-REL_FRIENDS = 1
-REL_NONE = 2
-REL_A2B = 3
-REL_B2A = 4
+class REL:
+    NONE = 0
+    FRIENDS = 1
+    A2B = 2
+    B2A = 3
+    SAME = 4
 
 
 def relation_and_request(user_a, user_b):
@@ -28,20 +29,20 @@ def relation_and_request(user_a, user_b):
     req = ""
 
     if user_a == user_b:
-        return REL_SAME, req
+        return REL.SAME, req
 
     if friends(user_a, user_b):
-        return REL_FRIENDS, req
+        return REL.FRIENDS, req
 
     req = pending_request(user_a, user_b)
     if req and req.status == 0:
-        return REL_A2B, req
+        return REL.A2B, req
 
     req = pending_request(user_b, user_a)
     if req and req.status == 0:
-        return REL_B2A, req
+        return REL.B2A, req
 
-    return REL_NONE, req
+    return REL.NONE, req
 
 def relation(user_a, user_b):
     id, req = relation_and_request(user_a, user_b)
