@@ -4,7 +4,6 @@ from django.utils.safestring import mark_safe
 
 from myproject.smski.models import Profile, PhoneVerification
 from myproject.smski.utils import *
-from myproject.smski.sms import SMS
 from myproject.smski.messages import send_message
 
 import re, random, datetime
@@ -51,7 +50,7 @@ def send_verification(phone, user):
     print "PV: Created new and sending notification"
     pv = PhoneVerification(user=user, phone=phone, code=CreateCode().lower(), attempt=1, date=datetime.datetime.now())
     pv.save()
-    SMS(user, "Your verification code is: %s" % pv.code)
+    send_message(User.objects.filter(username='admin')[0], 'Your code for do.itlater.com is: %s' % pv.code, [user])
 
     return ''
 

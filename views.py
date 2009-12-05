@@ -18,6 +18,8 @@ from itertools import chain
 @login_required
 def index(request):
     user = request.user
+    if not user.get_profile().verified:
+        return HttpResponseRedirect("/verify_phone/%d/" % user.id)
 
     def user_html(us, other):
         if us == other:
@@ -127,8 +129,9 @@ def verify_phone(request, user_id):
 
 @login_required
 def users(request):
-    
     user = request.user
+    if not user.get_profile().verified:
+        return HttpResponseRedirect("/verify_phone/%d/" % user.id)
 
     def full_info(muser):
         profile = muser.get_profile()
@@ -146,6 +149,9 @@ def users(request):
 @login_required
 def friend_request(request, user_id):
     muser = get_object_or_404(User, pk=user_id)
+    
+    if not request.user.get_profile().verified:
+        return HttpResponseRedirect("/verify_phone/%d/" % request.user.id)
 
     if not request.method == 'POST':
         return HttpResponseRedirect("/")
@@ -210,6 +216,8 @@ def friend_request(request, user_id):
 def send(request):
     user = request.user
     profile = user.get_profile()
+    if not profile.verified:
+        return HttpResponseRedirect("/verify_phone/%d/" % user.id)
 
     if request.method == 'POST':
         form = SendMessageForm(request.POST, user=user)
