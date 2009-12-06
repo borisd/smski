@@ -21,7 +21,7 @@
                 <a class="nav_menu" href="/send_message/">SendSMS</a>
                 <a class="nav_menu go_right" href="/accounts/logout">Logout</a>
                 {% else %}
-                <a class="nav_menu" href="/">Login</a> / 
+                <a class="nav_menu" href="/">Login</a> 
                 <a class="nav_menu go_right" href="/new_user/">Sign up</a>
                 {% endif %}
                 </p>
@@ -30,6 +30,18 @@
                 {% block content %}<h1>NO CONTENT BLOCK !!</h1>{% endblock %}
             </div>
         </div>
+
+        <-- Google analytics --> 
+        <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+        </script>
+        <script type="text/javascript">
+            try {
+                var pageTracker = _gat._getTracker("UA-11929684-1");
+                pageTracker._trackPageview();
+            } catch(err) {}</script>
+
     </body>
 </html>
 

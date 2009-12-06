@@ -5,9 +5,9 @@ from django.utils.safestring import mark_safe
 from myproject.smski.models import Profile, PhoneVerification
 from myproject.smski.utils import *
 from myproject.smski.messages import send_message
+from myproject.smski.log import log
 
 import re, random, datetime
-import logging as log
 
 class SignUpForm(forms.Form):
     username = forms.CharField(max_length=30, min_length=3, label='Username')

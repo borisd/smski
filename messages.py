@@ -1,9 +1,10 @@
 from myproject.smski.models import *
+from myproject.smski.log import log
+
 from django.core.mail import send_mail
 from django.conf import settings
 
 from datetime import datetime
-import logging as log
 
 def send_mail_message(message, by, to):
     dbg = 'Message [%s] => [%s] : [%s]' % (by, to, message)

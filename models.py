@@ -76,3 +76,12 @@ class SMSTracker(models.Model):
     data = models.CharField(max_length=4000)
     parsed = models.BooleanField(default=False)
 
+
+class DataLog(models.Model):
+    msg = models.CharField(max_length=300)
+    date = models.DateTimeField()
+    user = models.ForeignKey(User, related_name='datalog')
+
+    def __unicode__(self):
+        return self.msg
+

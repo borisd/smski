@@ -1,6 +1,5 @@
 from myproject.smski.models import Profile, FriendRequest
-
-import logging as log
+from myproject.smski.log import log
 
 def pending_request(user_a, user_b):
     reqs = user_b.freqto.filter(by=user_a)
@@ -48,7 +47,7 @@ def relation_and_request_d(user_a, user_b):
 
 def relation_and_request(user_a, user_b):
     a,b = relation_and_request_d(user_a, user_b)
-    log.info('Relation %s : %s is %d' % (user_a, user_b, a))
+#    log.debug('Relation %s : %s is %d' % (user_a, user_b, a))
     return a,b
 
 def relation(user_a, user_b):

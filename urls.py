@@ -14,5 +14,6 @@ urlpatterns = patterns('myproject',
     (r'^set_phone/(?P<user_id>\d+)/$', 'smski.views.set_phone'),
     (r'^verify_phone/(?P<user_id>\d+)/$', 'smski.views.verify_phone'),
     (r'^friend_request/(?P<user_id>\d+)/$', 'smski.views.friend_request'),
+    (r'^logs/$', 'smski.views.logs'),
 )
 

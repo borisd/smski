@@ -10,11 +10,12 @@ from myproject.smski.models import *
 from myproject.smski.forms import *
 from myproject.smski.relations import *
 from myproject.smski.utils import *
+from myproject.smski.log import log
+
 
 # Utilities
 import datetime, re
 from itertools import chain
-import logging as log
 
 @login_required
 def index(request):
@@ -40,15 +41,15 @@ def index(request):
         message = 'sent a friend request to' if freq.status == 0 else 'accepted friend request from'
         return { 
                 'date': freq.date,
-                'html': build_html(user, freq.by, freq.to, message),
+                'html': build_html(user, freq.to, freq.by, message),
                 'message': '',
                }
 
     def msg_info(msg):
-        message = 'sent a SMS to'
+        message = 'sent an SMS to'
         return { 
                 'date': msg.date,
-                'html': build_html(user, msg.by, msg.to, 'sent a sms to'), 
+                'html': build_html(user, msg.by, msg.to, 'sent an SMS to'), 
                 'message': msg.message,
                }
         
@@ -213,10 +214,12 @@ def friend_request(request, user_id):
 
         log.info('%s: Accepted friend request %s -> %s' % (request.user, muser, request.user))
         pending.status = 1
+
         request.user.friends.add(muser.get_profile())
         muser.friends.add(request.user.get_profile())
         request.user.save()
         muser.save()
+
         pending.save()
 
     if op == 'Remove':
@@ -268,4 +271,28 @@ def send(request):
         'total_sms' : total_sms,
         'has_friends' : has_friends, 
         'user': user, })
+
+@login_required
+def logs(request):
+    if request.user.username != 'Boris':
+        return HttpResponseRedirect("/")
+
+    step = 50
+
+    page_str = request.GET.get('page', '1')
+    page = int(page_str)
+
+    total = len(DataLog.objects.all())
+
+    pages = range(1, (total / step) + 2)
+   
+    # Paginate
+    logs = DataLog.objects.all().order_by('-date')[(page - 1) * step: (page) * step]
+
+    return render_to_response('logs.html', { 
+        'logs': logs,
+        'pages': pages,
+        'total': total,
+        'user' : request.user, }) 
+
 

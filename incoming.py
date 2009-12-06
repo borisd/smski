@@ -1,8 +1,10 @@
 import sys, email, re, datetime
+
 from BeautifulSoup import BeautifulSoup
+
 from myproject.smski.models import *
 from myproject.smski.messages import send_message
-import logging as log
+from myproject.smski.log import log
 
 def incoming_mail(string):
     log.info('Parsing new email')
