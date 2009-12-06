@@ -315,3 +315,19 @@ a.signup_button {
     text-shadow:0 1px 0 #DDFF66;
     margin-bottom:25px;
 }
+
+div#new_entries {
+    display:none;
+    height:30px;
+    background: #F4FA58;
+    border:1px dotted #BBBBBB;
+    text-align:center;
+    font-weight:bold;
+    cursor:pointer;
+    padding:2px;
+    margin:5px;
+}
+div#new_entries:hover {
+    background: #F5F6CE;
+}
+

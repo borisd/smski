@@ -1,0 +1,35 @@
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+<script type="text/javascript">
+    var hidden = 1;
+    var old_size = 0;
+
+    function update_cell(size) {
+        console.log("Got (" + old_size + ") " + size);
+        var elem = $("div#new_entries");
+        if (hidden) {
+            elem.slideDown('fast');
+            hidden = 0;
+        }
+        $("span#new_entries").html(size);
+    }
+
+    function ajax_complete(data) {
+        var new_size = parseInt(data);
+        if (new_size > old_size)
+        {
+            update_cell(new_size - old_size);
+        }
+        setTimeout("start_ajax()", 1000 * 5);
+    }
+
+    function start_ajax() {
+        $.get("", { ajax: "get_logs" }, ajax_complete);
+    }
+
+    $(document).ready(function() {
+            $("div#new_entries").click( function() { window.location.reload() } );
+            old_size = parseInt($("span#new_entries").html());
+            ajax_complete('0');
+    })
+</script>
+

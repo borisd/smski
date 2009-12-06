@@ -21,7 +21,9 @@ from itertools import chain
 def index(request):
     user = request.user
     
-    log.debug('%s: INDEX request' % user)
+    ajax = request.GET.get('ajax', '')
+    if not ajax:
+        log.debug('%s: INDEX request' % user)
 
     if not user.get_profile().verified:
         return HttpResponseRedirect("/verify_phone/%d/" % user.id)
@@ -38,7 +40,7 @@ def index(request):
         return "%s%s%s" % (user_html(user, by), info_html(message), user_html(user, to))
 
     def freq_info(freq):
-        message = 'sent a friend request to' if freq.status == 0 else 'accepted friend request from'
+        message = 'got a friend request from' if freq.status == 0 else 'accepted friend request from'
         return { 
                 'date': freq.date,
                 'html': build_html(user, freq.to, freq.by, message),
@@ -52,13 +54,20 @@ def index(request):
                 'html': build_html(user, msg.by, msg.to, 'sent an SMS to'), 
                 'message': msg.message,
                }
-        
 
-    freq_list = (FriendRequest.objects.filter(by=user) | FriendRequest.objects.filter(to=user)).distinct()[:50]
-    freq_data = map(freq_info, freq_list)
+    # Get all the events we show
+    freq_list = (FriendRequest.objects.filter(by=user) | FriendRequest.objects.filter(to=user)).distinct()
+    msg_list = (SMSMessage.objects.filter(by=user) | SMSMessage.objects.filter(to=user)).distinct()
 
-    msg_list = (SMSMessage.objects.filter(by=user) | SMSMessage.objects.filter(to=user)).distinct()[:50]
-    msg_data = map(msg_info, msg_list)
+    total = len(freq_list) + len(msg_list)
+
+    # Handle the new entries script
+    if ajax:
+        return HttpResponse(total, mimetype='application/javascript')
+
+
+    freq_data = map(freq_info, freq_list[:50])
+    msg_data = map(msg_info, msg_list[:50])
 
     data = sorted(chain(freq_data, msg_data), reverse=True)[:50]
 
@@ -69,6 +78,7 @@ def index(request):
         'user': user,
         'pending': pending,
         'sent_sms': sent_sms,
+        'total': total,
         })
 
 
@@ -163,7 +173,7 @@ def users(request):
             
         return { 'id':id, 'nick':nick, 'relation':rel, 'reqid': req.id if req else "" }
     
-    data = map(full_info, User.objects.all().order_by('username'))
+    data = map(full_info, User.objects.filter(profile__verified=True).order_by('username'))
 
     return render_to_response('user_list.html', { 'data': data, 'REL': REL, 'user': user, })
 
@@ -277,12 +287,17 @@ def logs(request):
     if request.user.username != 'Boris':
         return HttpResponseRedirect("/")
 
+    total = len(DataLog.objects.all())
+
+    ajax = request.GET.get('ajax', '')
+    if ajax:
+        return HttpResponse(total, mimetype='application/javascript')
+
     step = 50
 
     page_str = request.GET.get('page', '1')
     page = int(page_str)
 
-    total = len(DataLog.objects.all())
 
     pages = range(1, (total / step) + 2)
    

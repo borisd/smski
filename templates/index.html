@@ -1,9 +1,16 @@
 {% extends "base.html" %}
-
 {% block content %}
+
+{% include "new_entries.html" %}
+
 <h1 class="user"> {{ user }} </h1>
 <p class="note"> You have <strong>{{ pending }}</strong> pending friend request{{ pending|pluralize }} </p>
 <p class="note"> and you have sent <strong>{{ sent_sms }}</strong> message{{ sent_sms|pluralize }} today (out of 30)</p>
+
+<div id="new_entries" class="message">
+    You have <span id="new_entries">{{total}}</span> new events
+</div>
+
 <table class="index" border=0>
     {% for item in data %}
     <tr class="index">
