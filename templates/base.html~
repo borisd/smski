@@ -31,7 +31,7 @@
             </div>
         </div>
 
-        <-- Google analytics --> 
+        <h3 class="note center"> {% include "build.html" %} </h3>
         <script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
             document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
@@ -40,7 +40,8 @@
             try {
                 var pageTracker = _gat._getTracker("UA-11929684-1");
                 pageTracker._trackPageview();
-            } catch(err) {}</script>
+            } catch(err) {}
+        </script>
 
     </body>
 </html>
