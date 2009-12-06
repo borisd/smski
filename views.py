@@ -17,7 +17,30 @@ from myproject.smski.log import log
 import datetime, re
 from itertools import chain
 
-@login_required
+def ready_user(function):
+    """
+    Decorator for views that checks that:
+    - User is logged in
+    - User has phone set
+    - User has phone verified
+    """
+    def wrapper(*args, **kwargs):
+        user = args[0].user
+
+        if not user.is_authenticated():
+            return HttpResponseRedirect("/accounts/login/");
+
+        if not user.get_profile().phone:
+            return HttpResponseRedirect("/set_phone/")
+
+        if not user.get_profile().verified:
+            return HttpResponseRedirect("/verify_phone/")
+
+        return function(*args, **kwargs)
+
+    return wrapper 
+
+@ready_user
 def index(request):
     user = request.user
     
@@ -25,8 +48,6 @@ def index(request):
     if not ajax:
         log.debug('%s: INDEX request' % user)
 
-    if not user.get_profile().verified:
-        return HttpResponseRedirect("/verify_phone/%d/" % user.id)
 
     def user_html(us, other):
         if us == other:
@@ -103,7 +124,7 @@ def new_user(request):
 
             log.info('%s: Added new user' % user)
 
-            return HttpResponseRedirect("/set_phone/%d/" % user.id)
+            return HttpResponseRedirect("/set_phone/")
     else:
         form = SignUpForm()
 
@@ -111,35 +132,30 @@ def new_user(request):
 
 
 @login_required
-def set_phone(request, user_id):
+def set_phone(request):
     log.debug('%s: Set phone request' % request.user)
 
-    user = get_object_or_404(User, pk=user_id)
-    if user != request.user:
-        log.error('%s: Set phone incorrect user %s != %s' % (user, user, request.user))
-        return HttpResponseRedirect("/")
-
+    user = request.user
     profile = user.get_profile()
 
     if request.method == 'POST':
         form = SetPhoneForm(user, request.POST)
         if form.is_valid():
             log.info('%s: Successfuly set phone to %s' % (user, profile.phone))
-            return HttpResponseRedirect("/verify_phone/%s/" % user_id)
+            return HttpResponseRedirect("/verify_phone/")
     else:
         form = SetPhoneForm(user)
 
     return render_to_response('set_phone.html', { 'form' : form['phone'], 'user' : user, })
 
 @login_required
-def verify_phone(request, user_id):
+def verify_phone(request):
     log.debug('%s: Verify phone request' % request.user)
 
-    user = get_object_or_404(User, pk=user_id)
-    if user != request.user:
-        log.error('%s: Incorrect user during verify %s != %s' % (user, user, request.user))
-        return HttpResponseRedirect("/")
+    if not request.user.get_profile().phone:
+        return HttpResponseRedirect("/set_phone/")
 
+    user = request.user
     profile = user.get_profile()
     
     if request.method == 'POST':
@@ -156,14 +172,11 @@ def verify_phone(request, user_id):
     nice_phone = "0%s-%s" % (nice_phone[0:2], nice_phone[2:])
     return render_to_response('verify_phone.html', { 'form' : form, 'phone' : nice_phone, 'user': user, })
 
-@login_required
+@ready_user
 def users(request):
     log.debug('%s: User request' % request.user)
 
     user = request.user
-    if not user.get_profile().verified:
-        return HttpResponseRedirect("/verify_phone/%d/" % user.id)
-
     def full_info(muser):
         profile = muser.get_profile()
         id = muser.id
@@ -177,15 +190,12 @@ def users(request):
 
     return render_to_response('user_list.html', { 'data': data, 'REL': REL, 'user': user, })
 
-@login_required
+@ready_user
 def friend_request(request, user_id):
     log.debug('%s: Friend request' % request.user)
 
     muser = get_object_or_404(User, pk=user_id)
     
-    if not request.user.get_profile().verified:
-        return HttpResponseRedirect("/verify_phone/%d/" % request.user.id)
-
     if not request.method == 'POST':
         return HttpResponseRedirect("/")
 
@@ -248,14 +258,12 @@ def friend_request(request, user_id):
 
     return HttpResponseRedirect("/user_list/")
 
-@login_required
+@ready_user
 def send(request):
     log.debug('%s: Send request' % request.user)
 
     user = request.user
     profile = user.get_profile()
-    if not profile.verified:
-        return HttpResponseRedirect("/verify_phone/%d/" % user.id)
 
     if request.method == 'POST':
         form = SendMessageForm(request.POST, user=user)
@@ -282,7 +290,7 @@ def send(request):
         'has_friends' : has_friends, 
         'user': user, })
 
-@login_required
+@ready_user
 def logs(request):
     if request.user.username != 'Boris':
         return HttpResponseRedirect("/")
