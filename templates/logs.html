@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="info center">DB Logs ({{total}})</h2>
+<table class="user_list" border=0>
+    {% for x in logs %}
+    <tr>
+        <td class="user_list_user"> 
+            <span class="note">{{x.id}}</span> <span class="info">{{ x }}</span>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+Page:
+{% for i in pages %}
+<a href="/logs/?page={{i}}">{{i}}</a>,
+{% endfor %}
+{% endblock %}
+
