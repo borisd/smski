@@ -330,4 +330,8 @@ div#new_entries {
 div#new_entries:hover {
     background: #F5F6CE;
 }
-
+textarea {
+    font-size:large;
+    acolor:#227677;
+    afont-weight:bold;
+}

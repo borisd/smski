@@ -51,8 +51,8 @@ def index(request):
 
     def user_html(us, other):
         if us == other:
-            return '<span class="user_us"> You </span>' #% other
-        return '<span class="user"> %s </span>' % other
+            return '<span class="user_us">You</span>'
+        return '<span class="user">%s</span>' % other
 
     def info_html(message):
         return '<span class="info">%s</span>' % message
@@ -61,26 +61,42 @@ def index(request):
         return "%s%s%s" % (user_html(user, by), info_html(message), user_html(user, to))
 
     def freq_info(freq):
-        message = 'got a friend request from' if freq.status == 0 else 'accepted friend request from'
+        message = ' got a friend request from ' if freq.status == 0 else 'accepted friend request from'
         return { 
                 'date': freq.date,
                 'html': build_html(user, freq.to, freq.by, message),
                 'message': '',
                }
 
-    def msg_info(msg):
-        message = 'sent an SMS to'
-        return { 
-                'date': msg.date,
-                'html': build_html(user, msg.by, msg.to, 'sent an SMS to'), 
-                'message': msg.message,
-               }
+
+    def sent_info(sess):
+        def build_complex_html(user, msgs):
+            result = "%s%s" % (user_html(user, sess.user), info_html(" sent an SMS to "))
+            for i in msgs:
+                result += "%s, " % user_html(user, i.to)
+            return result[:-2]
+
+        msgs = SMSMessage.objects.filter(session=sess).order_by('to')
+        if not msgs:
+            log.error('%s: Session %d has no messages' % (user, sess.id))
+            return None
+
+        return {
+                'date': sess.date,
+                'html': build_complex_html(user, msgs),
+                'message': msgs[0].message,
+                }
+
+    def received_info(msg):
+        return sent_info(msg.session)
+
 
     # Get all the events we show
     freq_list = (FriendRequest.objects.filter(by=user) | FriendRequest.objects.filter(to=user)).distinct()
-    msg_list = (SMSMessage.objects.filter(by=user) | SMSMessage.objects.filter(to=user)).distinct()
+    received = SMSMessage.objects.filter(to=user)
+    sent = SMSSession.objects.filter(user=user)
 
-    total = len(freq_list) + len(msg_list)
+    total = len(freq_list) + len(sent) + len(received)
 
     # Handle the new entries script
     if ajax:
@@ -88,12 +104,15 @@ def index(request):
 
 
     freq_data = map(freq_info, freq_list[:50])
-    msg_data = map(msg_info, msg_list[:50])
+    sent_data = map(sent_info, sent[:50])
+    received_data = map(received_info, received[:50])
 
-    data = sorted(chain(freq_data, msg_data), reverse=True)[:50]
+    data = sorted(chain(freq_data, sent_data, received_data), reverse=True)[:50]
 
-    pending = len(FriendRequest.objects.filter(to=user))
+    pending = len(FriendRequest.objects.filter(to=user, status=0))
+
     sent_sms = get_sms_last_24h(user)
+
     return render_to_response("index.html", {
         'data': data,
         'user': user,

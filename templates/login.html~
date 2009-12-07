@@ -17,8 +17,8 @@
                         <p class="note">Password:</p>
                         <input type="password" name="password" value="" id="password">
                         <br>
-                        <input type="submit" value="Login" class="signin" />
-                        <input type="hidden" name="next" value="{{ next|escape }}" />
+                        <input type="submit" value="Login" class="signin extra_margin" />
+                        <input type="hidden" name="next" value="/" />
                     </h3>
                 </form>
             </div>

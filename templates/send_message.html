@@ -1,6 +1,51 @@
 {% extends "base.html" %}
 
 {% block content %}
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+<script language="javascript" type="text/javascript">
+
+    var old_text;
+        
+    function save_old_text()
+    {
+        var elem = $("textarea#id_message");
+        old_text = elem.val();
+    }
+
+    function update_text() 
+    {
+        elem = $("textarea#id_message");
+        var new_val = elem.val();
+        if (new_val.length > 50)
+        {
+            elem.val(old_text.substring(0, 50));
+        }
+        $("span#curr_chars").html(elem.val().length)
+    }
+
+    function limit_size()
+    {
+        elem = $("textarea#id_message");
+        var new_val = elem.val();
+        if (new_val.length > 50)
+        {
+            elem.val(new_val.substring(0, 50));
+        }
+        $("span#curr_chars").html(elem.val().length)
+    }
+
+
+    $(document).ready( function() {
+            elem = $("textarea#id_message");
+            elem.keydown(save_old_text);
+            elem.keyup(update_text);
+            elem.change(limit_size);
+            $("span#curr_chars").html(elem.val().length)
+     })
+
+</script>
+
+
 <form action="" method="post">
     <h2>Send a message </h2>
     <p class="note"> Already sent {{total_sms}}/30 sms</p>
@@ -8,15 +53,19 @@
 
     <table border=0 class="send_msg">
         <tr>
-            <th class="note">
-                Enter text to send, max 50 chars
-            </th>
-            <th class="note">
-                Select users, max 10
-            </th>
+            <td>
+            </td>
+            <td>
+                <span class="note extra_margin">
+                    Select users, max 10
+                </span>
+            </td>
         </tr>
         <tr>   
             <td class="send_msg_text">
+                <span class="note">Enter text to send, </span>
+                <span class="note" id="curr_chars">0</span>
+                <span class="note">/ 50 chars</span>
                 {{ msg_html }}
                 {% if msg.errors %}
                 {{ msg.errors }}
@@ -24,10 +73,10 @@
             </td>
             <td class="send_msg_users">
                 {% if has_friends %}
-                        {{ rec_html }}
-                    {% if rec.errors %}
-                        {{ rec.errors }}
-                    {% endif %}
+                {{ rec_html }}
+                {% if rec.errors %}
+                {{ rec.errors }}
+                {% endif %}
                 {% else %}
                 <a href="/user_list/" class="nav_menu">Add friends !</a>
                 {% endif %}
@@ -37,5 +86,7 @@
     <p class='error'> {{ form.errors }} </p>
     <input type="submit" value="Send">
 </form>
+
+
 {% endblock %}
 
