@@ -231,6 +231,7 @@ img {
 h1, h2, h3, h4 {
     display: inline;
 }
+
 input[type=password], input[type=text] {
     -moz-border-radius-bottomleft:4px;
     -moz-border-radius-bottomright:4px;
@@ -269,7 +270,7 @@ input[type=submit] {
     margin:6px;
 }
 
-input[type=submit]:hover {
+input[type=submit]:hover, .small_btn:hover {
     border:1px solid rgb(100, 0, 130);
 }
 
@@ -279,6 +280,33 @@ input[type=submit]:active {
     outline-style:none !important;
     outline-width:medium !important;
     text-shadow:none !important;
+}
+
+.small_btn {
+    -moz-background-clip:border;
+    -moz-background-inline-policy:continuous;
+    -moz-background-origin:padding;
+    -moz-border-radius-bottomleft:4px;
+    -moz-border-radius-bottomright:4px;
+    -moz-border-radius-topleft:4px;
+    -moz-border-radius-topright:4px;
+    background:#3399DD url(http://s.twimg.com/a/1259882278/images/bg-btn-blue.png) repeat-x scroll 0 0;
+    border:1px solid #3399DD;
+    color:#FFFFFF;
+    font-size:small;
+    font-weight:bold;
+    margin:0;
+    padding:2px 2px 2px 2px;
+    font-family:"Lucida Grande",Arial,Sans-serif;
+    font-size-adjust:none;
+    font-style:normal;
+    font-variant:normal;
+    text-decoration:none;
+    text-align:center;
+    line-height:16px;
+    height:16px;
+    width:32px;
+    float:right;
 }
 
 a.signup_button:hover, a.signup_button:focus {

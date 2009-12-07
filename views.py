@@ -60,11 +60,29 @@ def index(request):
     def build_html(user, by, to, message):
         return "%s%s%s" % (user_html(user, by), info_html(message), user_html(user, to))
 
+    def build_html_reply(user_id):
+        return '<a href="/send_message/?to=%d" class="small_btn">reply</a>' % user_id
+
+    def build_html_ac(freq):
+        return ''
+        html = '''
+                <form action="/friend_request/%d/" method="post" style="display:inline">
+                <input type="submit" value="%s" name="Action" class="small_btn"/>
+                </form>
+                ''' % (freq.id, 'Accept' if freq.to == user else 'Cancel')
+        return html               
+
     def freq_info(freq):
-        message = ' got a friend request from ' if freq.status == 0 else 'accepted friend request from'
+        if freq.status == 0:
+            message = ' got a friend request from ' 
+            extra = build_html_ac(freq)
+        else: 
+            message = ' accepted friend request from '
+            extra = ''
+
         return { 
                 'date': freq.date,
-                'html': build_html(user, freq.to, freq.by, message),
+                'html': build_html(user, freq.to, freq.by, message) + extra,
                 'message': '',
                }
 
@@ -74,7 +92,11 @@ def index(request):
             result = "%s%s" % (user_html(user, sess.user), info_html(" sent an SMS to "))
             for i in msgs:
                 result += "%s, " % user_html(user, i.to)
-            return result[:-2]
+            result = result[:-2]
+
+            if user != sess.user:
+                result += build_html_reply(sess.user.id)
+            return result
 
         msgs = SMSMessage.objects.filter(session=sess).order_by('to')
         if not msgs:
@@ -284,13 +306,15 @@ def send(request):
     user = request.user
     profile = user.get_profile()
 
+    send_to = request.GET.get('to', '').split(':')
+
     if request.method == 'POST':
         form = SendMessageForm(request.POST, user=user)
         if form.is_valid():
             form.action()
             return HttpResponseRedirect("/")
     else:
-        form = SendMessageForm(user=user)
+        form = SendMessageForm(user=user, initial={"recipients":send_to})
 
     msg = form['message']
     msg_html = msg.as_textarea(attrs={'rows':3, 'cols':30})
