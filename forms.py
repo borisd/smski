@@ -166,9 +166,9 @@ class SendMessageForm(forms.Form):
 
     def clean_recipients(self):
         rcp = self.cleaned_data['recipients']
-        if len(rcp) > 10:
+        if len(rcp) > 4:
             log.info('%s: tried to send to %d people' % (self.user, len(rcp)))
-            raise forms.ValidationError('Cannot send to more then 10 people')
+            raise forms.ValidationError('Cannot send to more then 4 people')
 
         if len(rcp) + get_sms_last_24h(self.user) > 30:
             log.warning('%s: tried to send to more then 30 people' % self.user)

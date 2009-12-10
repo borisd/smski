@@ -13,7 +13,8 @@
     {% for x in logs %}
     <tr>
         <td class="user_list_user"> 
-            <span class="note">{{x.id}}</span> <span class="info">{{ x }}</span>
+            <span class="note">{{x.id}}</span> <span class="info">{{ x }}</span> 
+            <span class="note go_right">{{ x.date|timesince }} ago </span>
         </td>
     </tr>
     {% endfor %}
