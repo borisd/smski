@@ -26,16 +26,22 @@ def send_message(user, message, to_list):
     ses = SMSSession(user=user, date=datetime.now(), reply_type=0)
     ses.save()
     fake_name = random.choice(NAMES)
+    name_used = 0
 
     for to in to_list:
         log.info("%d:  --- SMS --- [%s] -> [%s] : %s" % (ses.id, user, to, message))
         msg = SMSMessage(date=datetime.now(), by=user, to=to, session=ses, message=message, status=0)
         msg.save()
 
-        if to.username == 'admin' or to.username == 'murkin':
+        if user != 'boris' and (to.username == 'admin' or to.username == 'murkin'):
             log.error('%s: Trying to send sms to %s [%s]' % (user, to, message))
             return
 
         dynamic_addr = '%s <%s%d@do.itlater.com>' % (user, fake_name, ses.id)
         send_mail_message(message, dynamic_addr, "0%s@spikkosms.com" % to.get_profile().phone)
+        name_used += 1
+
+        if name_used > 4:
+            fake_name = random.choice(NAMES)
+            name_used = 0
 
