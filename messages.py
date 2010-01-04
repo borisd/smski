@@ -9,20 +9,18 @@ from datetime import datetime
 import random
 
 def send_mail_message(message, by, to):
+
+    body = message.encode('windows-1255')
     dbg = 'Message [%s] => [%s] : [%s]' % (by, to, message)
 
     if settings.SMS_MODE == 2:
         log.info('SMS: %s' % dbg)
-        send_mail('', message, by, [to])
+        send_mail('', body, by, [to])
     elif settings.SMS_MODE == 1:
         log.info('EMAIL: %s' % dbg)
-        send_mail('', message, by, ['boris@dinkevich.com'])
+        send_mail('', body, by, ['boris@dinkevich.com'])
     else:
         log.info('Info: %s' % dbg)
-
-
-    if settings.DEVEL:
-        print dbg
 
 def send_message(user, message, to_list):
     ses = SMSSession(user=user, date=datetime.now(), reply_type=0)

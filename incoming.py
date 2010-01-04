@@ -1,4 +1,4 @@
-import sys, email, re, datetime
+import sys, email, re, datetime, quopri
 
 from BeautifulSoup import BeautifulSoup
 
@@ -54,6 +54,9 @@ def incoming_mail(string):
 
     log.info("Got message from %s to %s [%s]" % (by, ses.user, body))
 
-    send_message(by, body, [ses.user])
+    body_w1255 = quopri.decodestring(body)
+    decoded_body = body_w1255.decode('windows-1255').strip()
+
+    send_message(by, decoded_body, [ses.user])
 
 
