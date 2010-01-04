@@ -10,7 +10,7 @@ import random
 
 def send_mail_message(message, by, to):
 
-    body = message.encode('windows-1255')
+    body = message.encode('utf-8')
     dbg = 'Message [%s] => [%s] : [%s]' % (by, to, message)
 
     if settings.SMS_MODE == 2:
@@ -33,7 +33,7 @@ def send_message(user, message, to_list):
         msg = SMSMessage(date=datetime.now(), by=user, to=to, session=ses, message=message, status=0)
         msg.save()
 
-        if user != 'boris' and (to.username == 'admin' or to.username == 'murkin'):
+        if user.username != 'boris' and (to.username == 'admin' or to.username == 'murkin'):
             log.error('%s: Trying to send sms to %s [%s]' % (user, to, message))
             return
 
