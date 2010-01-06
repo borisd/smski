@@ -17,7 +17,7 @@
 
     {% for x in data %}
     <tr>
-        <td class="user_list_user"> <p class="user"> {{ x.nick }} </p> </td>
+        <td class="user_list_user"> <p><a class="user" href="/account/{{x.id}}/">{{ x.nick }}</a></p> </td>
         <td class="user_list_status">
             <p class="info">
             {% ifequal x.relation REL.FRIENDS %}

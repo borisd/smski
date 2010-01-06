@@ -44,7 +44,7 @@ div.nav_menu {
     -webkit-border-radius:6px;
     padding:10px;
     color:#5c5c5c;
-    width:250px;
+    width:300px;
     position:relative;
     margin-right:1px;
     margin-left:auto;
@@ -140,6 +140,10 @@ td.send_msg_text {
     font-variant:normal;
     font-weight:bold;
     line-height:normal;
+    text-decoration:none;
+}
+.user:hover {
+    text-decoration:underline;
 }
 .user_us {
     color:rgb(155,40,140);
@@ -161,6 +165,7 @@ p.info {
     font-weight:normal;
     line-height:normal;
 }
+
 td.user_list_user {
 }
 input#send_code {
@@ -189,9 +194,10 @@ div#head {
 }
 ul {
     margin:0px;
-    padding-left:10px;
+    padding-left:0px;
 }
 li {
+    list-style-type:none;
     margin:0px;
 }
 p.error {
@@ -243,7 +249,7 @@ input[type=password], input[type=text] {
     padding:5px;
     width:203px;
 }
-input[type=submit] {
+input[type=submit], .normal_btn {
     -moz-background-clip:border;
     -moz-background-inline-policy:continuous;
     -moz-background-origin:padding;
@@ -264,13 +270,14 @@ input[type=submit] {
     font-variant:normal;
     line-height:16px;
     height:30px;
+    text-decoration:none;
 }
 
 .extra_margin {
     margin:6px;
 }
 
-input[type=submit]:hover, .small_btn:hover {
+input[type=submit]:hover, .normal_btn:hover, .small_btn:hover {
     border:1px solid rgb(100, 0, 130);
 }
 

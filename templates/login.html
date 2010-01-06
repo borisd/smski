@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <h2 class="info"> Enter your Login information </h2>
-<p class="notice"> Or register a new user !</p>
+<p class="note"> Or register a new user !</p>
 <br>
 
 <table style="width:90%" border=0>
@@ -19,6 +19,8 @@
                         <br>
                         <input type="submit" value="Login" class="signin extra_margin" />
                         <input type="hidden" name="next" value="/" />
+                        <br>
+                        <a class="note" href="/accounts/reset_pw/">Reset your password</a>
                     </h3>
                 </form>
             </div>

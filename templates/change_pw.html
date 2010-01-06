@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="info"> Change password </h2>
+<br>
+
+<div class="center">
+    <form action="" method="post">
+        <br>
+        <div>
+            <p class="aligned wide"><label for="id_old_password">Old password:</label></p>
+            {{ form.old_password }}
+            {{ form.old_password.errors }}
+        </div>
+
+        <div>
+            <br>
+            <p class="aligned wide"><label for="id_new_password1">New password:</label></p>
+            {{ form.new_password1 }}
+            {{ form.new_password1.errors }}
+        </div>
+
+        <div>
+            <p class="aligned wide"><label for="id_new_password2">Confirm password:</label></p>
+            {{ form.new_password2 }}
+            {{ form.new_password2.errors }}
+        </div>
+
+        <input type="submit" value="Change" class="signin extra_margin">
+    </form>
+</div>
+{% endblock %}
+
+

@@ -19,6 +19,7 @@ class db_handler(logging.Handler):
         date = datetime.datetime.now()
         entry = DataLog(msg=msg, date=date, user=self.user)
         entry.save()
+        print msg
 
 def log_init():
     global log

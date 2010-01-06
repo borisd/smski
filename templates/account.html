@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style type="text/css">
+    div.statistics
+    {
+        width:100%;
+        margin:0px;
+        line-height:150%;
+    }
+
+    div#sms
+    {
+        float:left;
+        width:160px;
+        margin:0;
+        padding:1em;
+    }
+
+    div#friends
+    {
+        margin-left:190px;
+        padding:1em;
+    }
+</style>
+
+
+<h1 class="user"> {{ user }} </h1>
+<p class="note"> Account statistics </p>
+
+<div class="statistic">
+    <div id="sms">
+        <h3> SMS: </h3>
+        <ul>
+            <li> Sent: {{ sms_sent }} </li>
+            <li> Received: {{ sms_received }} </li>
+        </ul>
+    </div>
+
+    <div id="friends">
+        <h3> Friends: </h3>
+        <ul>
+            {% for friend in friends %}
+            <li><a class="user" href="/account/{{friend.id}}">{{ friend }}</a></li>
+            {% endfor %}
+        </ul>
+        <br>
+        Pending: {{ pending_friends }}
+    </div>
+
+</div>
+<br>
+<br>
+<div class="center">
+    {% if is_me %}
+    <p><a href="/accounts/change_pw/">Change password</a></p>
+    {% else %}
+    <a class="normal_btn" href="/send_message/?to={{user.id}}">Send SMS</a>
+    {% endif %}
+</div>
+{% endblock %}
+
+

@@ -17,6 +17,9 @@ from myproject.smski.log import log
 import datetime, re
 from itertools import chain
 
+def show(request, template):
+    return render_to_response(template)
+
 def ready_user(function):
     """
     Decorator for views that checks that:
@@ -41,6 +44,21 @@ def ready_user(function):
     return wrapper 
 
 @ready_user
+def account(request, user_id = None):
+    if user_id == None:
+        user_id = request.user.id
+
+    user = get_object_or_404(User, pk=user_id)
+
+    friends = user.get_profile().friends.all()
+    pending_friends = len(FriendRequest.objects.filter(to=user, status=0))
+    sms_sent = len(SMSMessage.objects.filter(by=user))
+    sms_received = len(SMSMessage.objects.filter(to=user))
+    is_me = True if user == request.user else False
+
+    return render_to_response('account.html', locals())
+
+@ready_user
 def index(request):
     user = request.user
     
@@ -52,7 +70,7 @@ def index(request):
     def user_html(us, other):
         if us == other:
             return '<span class="user_us">You</span>'
-        return '<span class="user">%s</span>' % other
+        return '<span><a href="/account/%d/" class="user">%s<a/></span>' % (other.id, other)
 
     def info_html(message):
         return '<span class="info">%s</span>' % message
@@ -362,5 +380,16 @@ def logs(request):
         'pages': pages,
         'total': total,
         'user' : request.user, }) 
+
+def reset_pw(request):
+    if request.method == 'POST':
+        form = ResetPWForm(request.POST)
+        if form.is_valid():
+            form.execute()
+            return HttpResponseRedirect("/accounts/reset/")
+    else:
+        form = ResetPWForm()
+
+    return render_to_response('reset_pw.html', {'form':form, })
 
 

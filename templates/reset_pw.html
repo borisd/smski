@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="info"> Reset your password </h2>
+<p class="note"> A new password will be sent to <strong>your</strong> phone</p>
+<p class="note"> You can later change it to any password you want, via the account page</p>
+<br>
+
+<div class="center">
+
+    <form action="" method="post">
+        <table>
+            <p class="note">Username</p>
+            <div> {{ form.username }} </div>
+            <p class="error"> {% for error in form.username.errors %} {{ error }} {% endfor %} </p>
+
+            <p class="note">Phone</p>
+            <div> {{ form.phone}} </div>
+            <p class="error"> {% for error in form.phone.errors %} {{ error }} {% endfor %} </p>
+        </table>
+        <br>
+        <input type="submit" value="Reset" class="signin extra_margin">
+    </form>
+</div>
+
+{% endblock %}
+
+

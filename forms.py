@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, check_password
 from django.utils.safestring import mark_safe
 
 from myproject.smski.models import Profile, PhoneVerification
@@ -8,6 +8,60 @@ from myproject.smski.messages import send_message
 from myproject.smski.log import log
 
 import re, random, datetime
+
+def check_phone_validity(dirty_phone, user):
+    ''' Check to see if a string represents a valid phone number '''
+
+    clean_phone = re.sub('[- .\t]', '', dirty_phone)
+    if re.sub('[0-9]', '', clean_phone) != '':
+        log.info('%s: Invalid chars in phone: [%s]' % (user, clean_phone))
+        raise forms.ValidationError("Please use only numbers and '-' in phone number")
+
+    if clean_phone[0] != '0' or clean_phone[1] != '5':
+        log.info('%s: Unsupported phone format [%s]' % (user, clean_phone))
+        raise forms.ValidationError("Only '05x-xxxxxxx' phones are supported")
+
+    if len(clean_phone) != 10:
+        log.info('%s: Incorrect number of digits in phone [%s]' % (user, clean_phone))
+        raise forms.ValidationError("Number should have 10 digits, you entered only %d" % len(clean_phone))
+
+    return int(clean_phone, 10)
+
+def CreateCode(user):
+    random.seed()
+    opts = Dictionary().split(' ')
+    code = "%s%d" % (opts[random.randint(0, len(opts)-1)], random.randint(11,99))
+    log.info('%s: Generated random code for verification [%s]' % (user, code))
+    return code
+
+class ResetPWForm(forms.Form):
+    username = forms.CharField(max_length=30, min_length=3, label='Username')
+    phone = forms.CharField(label='Cell phone number')
+
+    def clean_phone(self):
+        phone = check_phone_validity(self.cleaned_data['phone'], self.cleaned_data['username'])
+        try:
+            user = User.objects.get(username__iexact=self.cleaned_data['username'])
+        except User.DoesNotExist:
+            log.error('Trying to reset password for unknown user [%s]' % self.cleaned_data['username'])
+            raise forms.ValidationError("Unknown User and Phone combination")
+
+        if user.get_profile().phone != phone:
+            log.error('Not matching user/phone User: %s Real Phone: %d Attempted %d' % 
+                    (self.cleaned_data['username'], user.get_profile().phone, phone))
+            raise forms.ValidationError("Unknown User and Phone combination")
+
+        return phone
+
+    def execute(self):
+        user = User.objects.get(username__iexact=self.cleaned_data['username'])
+        new_pass = CreateCode(user)
+
+        log.info('%s: Password has been reset to %s' % (user, new_pass))
+
+        user.set_password(new_pass)
+        user.save()
+        send_message(User.objects.filter(username='admin')[0], 'SMSKI: Your password has been reset to: %s' % new_pass, [user])
 
 class SignUpForm(forms.Form):
     username = forms.CharField(max_length=30, min_length=3, label='Username')
@@ -31,13 +85,6 @@ class SignUpForm(forms.Form):
         return pw
 
 def send_verification(phone, user):
-    def CreateCode():
-        random.seed()
-        opts = Dictionary().split(' ')
-        code = "%s%d" % (opts[random.randint(0, len(opts)-1)], random.randint(11,99))
-        log.info('%s: Generated random code for verification [%s]' % (user, code))
-        return code
-
     old_ver = PhoneVerification.objects.filter(user=user)
 
     # TODO: Handle flooding of verifications
@@ -51,9 +98,9 @@ def send_verification(phone, user):
         old_ver[0].delete()
 
     log.info("%s: Created new PhoneVerification and sending notification" % (user))
-    pv = PhoneVerification(user=user, phone=phone, code=CreateCode().lower(), attempt=1, date=datetime.datetime.now())
+    pv = PhoneVerification(user=user, phone=phone, code=CreateCode(user).lower(), attempt=1, date=datetime.datetime.now())
     pv.save()
-    send_message(User.objects.filter(username='admin')[0], 'Your code for do.itlater.com is: %s' % pv.code, [user])
+    send_message(User.objects.filter(username='admin')[0], 'Your code for SMSKI is: %s' % pv.code, [user])
 
     return ''
 
@@ -89,20 +136,8 @@ class SetPhoneForm(forms.Form):
 
     def clean_phone(self):
         dirty_phone = self.cleaned_data['phone']
-        clean_phone = re.sub('[- .\t]', '', dirty_phone)
-        if re.sub('[0-9]', '', clean_phone) != '':
-            log.info('%s: Invalid chars in phone: [%s]' % (self.user, clean_phone))
-            raise forms.ValidationError("Please use only numbers and '-' in phone number")
 
-        if clean_phone[0] != '0' or clean_phone[1] != '5':
-            log.info('%s: Unsupported phone format [%s]' % (self.user, clean_phone))
-            raise forms.ValidationError("Only '05x-xxxxxxx' phones are supported")
-
-        if len(clean_phone) != 10:
-            log.info('%s: Incorrect number of digits in phone [%s]' % (self.user, clean_phone))
-            raise forms.ValidationError("Number should have 10 digits, you entered only %d" % len(clean_phone))
-
-        phone_numeric = int(clean_phone, 10)
+        phone_numeric = check_phone_validity(dirty_phone, self.user)
 
         # Prevent two users using the same phone
         query = Profile.objects.filter(phone=phone_numeric)
