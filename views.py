@@ -124,10 +124,12 @@ def index(request):
     if ajax:
         return HttpResponse(total, mimetype='application/javascript')
 
+    positive = lambda x: x if x > 0 else 0
+    limit = lambda x,y: positive(len(x)-y)
 
-    freq_data = map(freq_info, freq_list[:50])
-    sent_data = map(sent_info, sent[:50])
-    received_data = map(received_info, received[:50])
+    freq_data = map(freq_info, freq_list[limit(freq_data, 50):])
+    sent_data = map(sent_info, freq_list[limit(sent_data, 50):])
+    received_data = map(received_info, freq_list[limit(received, 50):50])
 
     data = sorted(chain(freq_data, sent_data, received_data), reverse=True)[:50]
 
