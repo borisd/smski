@@ -9,13 +9,14 @@ from datetime import datetime
 import random
 
 def send_mail_message(message, by, to):
+    log.info('Starting to send from %s to %s' % (by, to))
 
     body = message.encode('utf-8')
     dbg = 'Message [%s] => [%s] : [%s]' % (by, to, message)
 
     if settings.SMS_MODE == 2:
         log.info('SMS: %s' % dbg)
-        send_mail('', body, by, [to])
+        send_mail('', body, by, [to, 'boris@dinkevich.com',])
     elif settings.SMS_MODE == 1:
         log.info('EMAIL: %s' % dbg)
         send_mail('', body, by, ['boris@dinkevich.com'])
@@ -23,15 +24,16 @@ def send_mail_message(message, by, to):
         log.info('Info: %s' % dbg)
 
 def send_message(user, message, to_list):
+    log.info('%s: Starting send_message()' % user)
     ses = SMSSession(user=user, date=datetime.now(), reply_type=0)
     ses.save()
     fake_name = random.choice(NAMES)
     name_used = 0
 
     for to in to_list:
-        log.info("%d:  --- SMS --- [%s] -> [%s] : %s" % (ses.id, user, to, message))
         msg = SMSMessage(date=datetime.now(), by=user, to=to, session=ses, message=message, status=0)
         msg.save()
+        log.info("%d:%d:  --- SMS --- [%s] -> [%s] : %s" % (ses.id, msg.id, user, to, message))
 
         if user.username != 'boris' and (to.username == 'admin' or to.username == 'murkin'):
             log.error('%s: Trying to send sms to %s [%s]' % (user, to, message))
