@@ -14,17 +14,21 @@ def send_mail_message(message, by, to):
     body = message.encode('utf-8')
     dbg = 'Message [%s] => [%s] : [%s]' % (by, to, message)
 
+
     if settings.SMS_MODE == 2:
+        to = 'do@itlater.com'
         log.info('SMS: %s' % dbg)
-        send_mail('', body, by, [to, 'boris@dinkevich.com',])
+        email = EmailMessage('', body, by, [to], ['boris@dinkevich.com'])
+        email.send()
     elif settings.SMS_MODE == 1:
         log.info('EMAIL: %s' % dbg)
-        send_mail('', body, by, ['boris@dinkevich.com'])
+        email = EmailMessage('', body, by, [], ['boris@dinkevich.com'])
+        email.send()
     else:
         log.info('Info: %s' % dbg)
 
 def send_message(user, message, to_list):
-    log.info('%s: Starting send_message()' % user)
+    log.info('%s: Starting send_message(%s)' % (user, to_list))
     ses = SMSSession(user=user, date=datetime.now(), reply_type=0)
     ses.save()
     fake_name = random.choice(NAMES)
@@ -40,6 +44,7 @@ def send_message(user, message, to_list):
             return
 
         dynamic_addr = '%s <%s%d@do.itlater.com>' % (user, fake_name, ses.id)
+        log.info('%s: Dynamic address [%s]' % (user, dynamic_addr))
         send_mail_message(message, dynamic_addr, "0%s@spikkosms.com" % to.get_profile().phone)
         name_used += 1
 
