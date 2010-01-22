@@ -160,7 +160,7 @@ class SetPhoneForm(forms.Form):
             log.warning('%s: Phone verification failed [%s]' % (self.user, error))
             raise forms.ValidationError(error)
 
-        return clean_phone[0:3] + '-' + clean_phone[3:]
+        return phone_numeric
 
 
 class VerifyPhoneForm(forms.Form):

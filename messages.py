@@ -2,7 +2,7 @@ from myproject.smski.models import *
 from myproject.smski.log import log
 from myproject.smski.utils import NAMES
 
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
 from django.conf import settings
 
 from datetime import datetime
