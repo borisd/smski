@@ -18,15 +18,42 @@ def parse_incoming_mail(string):
         log.error('No payload !')
         exit()
 
-    soup = BeautifulSoup(data)
-    num = int(re.sub("[^0-9]", '', soup.findAll('font')[1].string)[-9:])
-    body = re.sub('=\d.', '', soup.findAll('font')[2].string).strip()
+    try:
+        soup = BeautifulSoup(data)
+    except:
+        log.error('Error loading Soup')
+
+    try:
+        str = soup.findAll('font')[1].string)[-9:]
+    except:
+        log.error('Error getting number')
+
+    try:
+        num = int(re.sub("[^0-9]", '', str))
+    except:
+        log.error('Error getting num for [%s]' % str)
+
+    try:
+        str = soup.findAll('font')[2].string
+    except:
+        log.error('Error getting body')
+
+    try:
+        body = re.sub('=\d.', '', str).strip()
+    except:
+        log.error('Error getting body [%s]' % str)
+
 
 #    st.parsed = True;
 #    st.save()
 
     # Find the session 
-    session_id = int(re.search('[0-9]+', (msg['To']).split('@')[0]).group(0), 10)
+    str = re.search('[0-9]+', (msg['To']).split('@')[0]).group(0)
+    try:
+        session_id = int(str, 10)
+    except:
+        log.error('Error getting session id [%s]' % str)
+
     if not session_id:
         log.error("Error getting session id from %s " % msg['To'])
         return
