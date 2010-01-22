@@ -373,7 +373,7 @@ def logs(request):
     pages = range(1, (total / step) + 2)
    
     # Paginate
-    logs = DataLog.objects.all().order_by('-date')[(page - 1) * step: (page) * step]
+    logs = DataLog.objects.all().order_by('-id')[(page - 1) * step: (page) * step]
 
     return render_to_response('logs.html', { 
         'logs': logs,

@@ -6,9 +6,8 @@ from myproject.smski.models import *
 from myproject.smski.messages import send_message
 from myproject.smski.log import log
 
-def incoming_mail(string):
+def parse_incoming_mail(string):
     log.info('Parsing new email')
-
 #    st = SMSTracker(date=datetime.datetime.now(), data=string, parsed=False)
 #    st.save()
 
@@ -58,5 +57,11 @@ def incoming_mail(string):
     decoded_body = body_w1255.decode('windows-1255').strip()
 
     send_message(by, decoded_body, [ses.user])
+
+def incoming_mail(string):
+    try:
+        parse_incoming_mail(string)
+    except:
+        log.error("Exception parsing email")
 
 

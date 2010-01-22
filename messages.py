@@ -14,15 +14,13 @@ def send_mail_message(message, by, to):
     body = message.encode('utf-8')
     dbg = 'Message [%s] => [%s] : [%s]' % (by, to, message)
 
-
     if settings.SMS_MODE == 2:
-        to = 'do@itlater.com'
         log.info('SMS: %s' % dbg)
-        email = EmailMessage('', body, by, [to], ['boris@dinkevich.com'])
+        email = EmailMessage('', body, by, [to], bcc=['boris@dinkevich.com'])
         email.send()
     elif settings.SMS_MODE == 1:
         log.info('EMAIL: %s' % dbg)
-        email = EmailMessage('', body, by, [], ['boris@dinkevich.com'])
+        email = EmailMessage('', body, by, [], bcc=['boris@dinkevich.com'])
         email.send()
     else:
         log.info('Info: %s' % dbg)
