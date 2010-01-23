@@ -370,6 +370,9 @@ def logs(request):
     page_str = request.GET.get('page', '1')
     page = int(page_str)
 
+    # Stats
+    sms_sent = len(SMSMessage.objects.filter(reply=False))
+    replies_sent = len(SMSMessage.objects.filter(reply=True))
 
     pages = range(1, (total / step) + 2)
    
