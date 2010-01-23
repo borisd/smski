@@ -52,7 +52,8 @@ def account(request, user_id = None):
 
     friends = user.get_profile().friends.all()
     pending_friends = len(FriendRequest.objects.filter(to=user, status=0))
-    sms_sent = len(SMSMessage.objects.filter(by=user))
+    sms_sent = len(SMSMessage.objects.filter(by=user, reply=False))
+    replies_sent = len(SMSMessage.objects.filter(by=user, reply=True))
     sms_received = len(SMSMessage.objects.filter(to=user))
     is_me = True if user == request.user else False
 

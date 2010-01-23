@@ -25,7 +25,7 @@ def send_mail_message(message, by, to):
     else:
         log.info('Info: %s' % dbg)
 
-def send_message(user, message, to_list):
+def send_message(user, message, to_list, phone_reply=False):
     log.info('%s: Starting send_message(%s)' % (user, to_list))
     ses = SMSSession(user=user, date=datetime.now(), reply_type=0)
     ses.save()
@@ -33,7 +33,7 @@ def send_message(user, message, to_list):
     name_used = 0
 
     for to in to_list:
-        msg = SMSMessage(date=datetime.now(), by=user, to=to, session=ses, message=message, status=0)
+        msg = SMSMessage(date=datetime.now(), by=user, to=to, session=ses, message=message, status=0, reply=phone_reply)
         msg.save()
         log.info("%d:%d:  --- SMS --- [%s] -> [%s] : %s" % (ses.id, msg.id, user, to, message))
 

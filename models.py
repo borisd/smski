@@ -67,6 +67,7 @@ class SMSMessage(models.Model):
     session = models.ForeignKey(SMSSession)
     message = models.CharField(max_length=200) # We need to clean this from hacks
     status = models.IntegerField(choices=SMS_STATUSES)
+    reply = models.BooleanField(default=False)
 
     def __unicode__(self):
         return u'SMS %s -> %s' % (self.by, self.to)

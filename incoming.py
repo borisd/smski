@@ -106,7 +106,7 @@ def parse_incoming_mail(string):
     body_w1255 = quopri.decodestring(body)
     decoded_body = body_w1255.decode('windows-1255').strip()
 
-    send_message(by, decoded_body, [ses.user])
+    send_message(by, decoded_body, [ses.user], phone_reply=True)
 
 def incoming_mail(string):
     try:
