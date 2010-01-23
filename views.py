@@ -148,7 +148,7 @@ def index(request):
 
     freq_data = map(freq_info, freq_list[limit(freq_list, 50):])
     sent_data = map(sent_info, sent[limit(sent, 50):])
-    received_data = map(received_info, received[limit(received, 50):50])
+    received_data = map(received_info, received[limit(received, 50):])
 
     data = sorted(chain(freq_data, sent_data, received_data), reverse=True)[:50]
 
