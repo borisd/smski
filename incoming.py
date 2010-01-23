@@ -7,11 +7,20 @@ from myproject.smski.messages import send_message
 from myproject.smski.log import log
 
 def parse_incoming_mail(string):
+    ''' Get a new email and parse it '''
+
     log.info('Parsing new email')
 #    st = SMSTracker(date=datetime.datetime.now(), data=string, parsed=False)
 #    st.save()
 
     msg = email.message_from_string(string)
+
+    # Only SMS messages have a custom reply-to (with the number to reply to)
+    if not 'Reply-To' in msg:
+        log.info('Got an administrative email. Skipping')
+        return
+    else:
+        log.info('--- New incoming SMS email ---')
 
     data = msg.get_payload()
     if not len(data):
@@ -23,16 +32,18 @@ def parse_incoming_mail(string):
     except:
         log.error('Error loading Soup')
 
-    try:
-        str = soup.findAll('font')[1].string)[-9:]
-    except:
-        log.error('Error getting number')
+    # Get the sending phone number from the reply-to field
+    reply_to = msg['Reply-To']
+    str = re.search('\++\d+ ([\d\-]+)', r).group(1).replace('-','')
+    if not str:
+        log.error('Error getting number [%s]' % reply_to)
 
     try:
-        num = int(re.sub("[^0-9]", '', str))
+        num = int(str)
     except:
-        log.error('Error getting num for [%s]' % str)
+        log.error('Error converting to num [%s]' % str)
 
+    # Get the text
     try:
         str = soup.findAll('font')[2].string
     except:
