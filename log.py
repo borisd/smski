@@ -17,7 +17,7 @@ class db_handler(logging.Handler):
     def emit(self, record):
         msg = self.format(record)
         date = datetime.datetime.now()
-        entry = DataLog(msg=msg, date=date, user=self.user)
+        entry = DataLog(msg=msg, date=date, user=self.user, level=record.levelno)
         entry.save()
         print msg
 

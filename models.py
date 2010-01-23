@@ -82,6 +82,7 @@ class DataLog(models.Model):
     msg = models.CharField(max_length=300)
     date = models.DateTimeField()
     user = models.ForeignKey(User, related_name='datalog')
+    level = models.PositiveIntegerField(max_length=5, default=0)
 
     def __unicode__(self):
         return self.msg
