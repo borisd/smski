@@ -383,6 +383,8 @@ def logs(request):
         'logs': logs,
         'pages': pages,
         'total': total,
+        'sms_sent':sms_sent,
+        'replies_sent':replies_sent,
         'user' : request.user, }) 
 
 def reset_pw(request):
