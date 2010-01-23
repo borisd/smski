@@ -31,28 +31,38 @@ def parse_incoming_mail(string):
         soup = BeautifulSoup(data)
     except:
         log.error('Error loading Soup')
+        return
 
     # Get the sending phone number from the reply-to field
-    reply_to = msg['Reply-To']
-    str = re.search('\++\d+ ([\d\-]+)', r).group(1).replace('-','')
-    if not str:
+    try:
+        reply_to = msg['Reply-To']
+        str = re.search('\++\d+ ([\d\-]+)', r).group(1).replace('-','')
+    except:
         log.error('Error getting number [%s]' % reply_to)
+        return
+
+    if not str:
+        log.error('Error empty number [%s]' % reply_to)
+        return
 
     try:
         num = int(str)
     except:
         log.error('Error converting to num [%s]' % str)
+        return
 
     # Get the text
     try:
         str = soup.findAll('font')[2].string
     except:
         log.error('Error getting body')
+        return
 
     try:
         body = re.sub('=\d.', '', str).strip()
     except:
         log.error('Error getting body [%s]' % str)
+        return
 
 
 #    st.parsed = True;
@@ -64,6 +74,7 @@ def parse_incoming_mail(string):
         session_id = int(str, 10)
     except:
         log.error('Error getting session id [%s]' % str)
+        return
 
     if not session_id:
         log.error("Error getting session id from %s " % msg['To'])
@@ -73,6 +84,7 @@ def parse_incoming_mail(string):
     if not len(ses):
         log.error("Error getting session with id %d" % session_id)
         return
+
     ses = ses[0]
 
     # Get source user
@@ -99,7 +111,7 @@ def parse_incoming_mail(string):
 def incoming_mail(string):
     try:
         parse_incoming_mail(string)
-    except:
-        log.error("Exception parsing email")
+    except Exception as inst:
+        log.error("Exception parsing email [%s]" % inst)
 
 
