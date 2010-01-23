@@ -36,7 +36,7 @@ def parse_incoming_mail(string):
     # Get the sending phone number from the reply-to field
     try:
         reply_to = msg['Reply-To']
-        str = re.search('\++\d+ ([\d\-]+)', r).group(1).replace('-','')
+        str = re.search('\++\d+ ([\d\-]+)', reply_to).group(1).replace('-','')
     except:
         log.error('Error getting number [%s]' % reply_to)
         return
@@ -111,7 +111,7 @@ def parse_incoming_mail(string):
 def incoming_mail(string):
     try:
         parse_incoming_mail(string)
-    except Exception as inst:
-        log.error("Exception parsing email [%s]" % inst)
+    except :
+        log.error("Exception parsing email")
 
 
