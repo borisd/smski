@@ -37,7 +37,7 @@ def send_message(user, message, to_list, phone_reply=False):
         msg = SMSMessage(date=datetime.now(), by=user, to=to, session=ses, message=message, status=0, reply=phone_reply)
         msg.save()
         log.info("%d:%d:  --- SMS --- [%s] -> [%s] : %s" % (ses.id, msg.id, user, to, message))
-
+        log.info('Starting..')
         log.info('User: %s' % user.username)
         log.info('To: %s' % to.username)
         if user.username != 'boris' and (to.username == 'admin' or to.username == 'murkin'):
