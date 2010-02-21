@@ -1,4 +1,4 @@
-import sys, email, re, datetime, quopri
+import sys, email, re, datetime, quopri, traceback
 
 from BeautifulSoup import BeautifulSoup
 
@@ -113,5 +113,6 @@ def incoming_mail(string):
         parse_incoming_mail(string)
     except :
         log.error("Exception parsing email")
+        traceback.print_exc()
 
 

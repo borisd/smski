@@ -6,7 +6,7 @@ from django.core.mail import send_mail, EmailMessage
 from django.conf import settings
 
 from datetime import datetime
-import random
+import random, traceback
 
 def send_mail_message(message, by, to):
     log.info('Starting to send from %s to %s' % (by, to))
@@ -35,21 +35,41 @@ def send_message(user, message, to_list, phone_reply=False):
 
     for to in to_list:
         msg = SMSMessage(date=datetime.now(), by=user, to=to, session=ses, message=message, status=0, reply=phone_reply)
-        msg.save()
-        log.info("%d:%d:  --- SMS --- [%s] -> [%s] : %s" % (ses.id, msg.id, user, to, message))
-        log.info('Starting..')
-        log.info('User: %s' % user.username)
-        log.info('To: %s' % to.username)
+        try:
+            msg.save()
+        except:
+            log.error('Exception saving')
+            traceback.print_exc()
+
+        try:
+            log.info('Starting..')
+            log.info('User: %s' % user.username)
+            log.info('To: %s' % to.username)
+        except:
+            log.error('Exception pre-print')
+            traceback.print_exc()
+    
+        try:
+            log.info('Start pars parse')
+            log.info('User2: %s' % user)
+            log.info('fake_name: %s' % fake_name)
+            log.info('ses.id: %d' % ses.id)
+        except:
+            log.error('Exception parse')
+            traceback.print_exc()
+            
+
+        try:
+            log.info("%d:%d:  --- SMS --- [%s] -> [%s] : %s" % (ses.id, msg.id, user, to, message))
+        except:
+            log.error('Exception printing info !')
+            traceback.print_exc()
+
         if user.username != 'boris' and (to.username == 'admin' or to.username == 'murkin'):
             log.error('Error sending..')
             log.error('%s: Trying to send sms to %s [%s]' % (user, to, message))
             return
 
-        log.info('Start pars parse')
-        log.info('User2: %s' % user)
-        log.info('fake_name: %s' % fake_name)
-        log.info('ses.id: %d' % ses.id)
-        
         dynamic_addr = '%s <%s%d@do.itlater.com>' % (user, fake_name, ses.id)
 
         log.info('%s: Dynamic address [%s]' % (user, dynamic_addr))
