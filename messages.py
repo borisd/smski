@@ -12,7 +12,7 @@ def send_mail_message(message, by, to):
     log.info('Starting to send from %s to %s' % (by, to))
 
     body = message.encode('utf-8')
-    dbg = 'Message [%s] => [%s] : [%s]' % (by, to, message)
+    dbg = u'Message [%s] => [%s] : [%s]' % (by, to, message)
 
     if settings.SMS_MODE == 2:
         log.info('SMS: %s' % dbg)
@@ -60,14 +60,14 @@ def send_message(user, message, to_list, phone_reply=False):
             
 
         try:
-            log.info("%d:%d:  --- SMS --- [%s] -> [%s] : %s" % (ses.id, msg.id, user, to, message))
+            log.info(u'%d:%d:  --- SMS --- [%s] -> [%s] : %s' % (ses.id, msg.id, user, to, message))
         except:
             log.error('Exception printing info !')
             traceback.print_exc()
 
         if user.username != 'boris' and (to.username == 'admin' or to.username == 'murkin'):
             log.error('Error sending..')
-            log.error('%s: Trying to send sms to %s [%s]' % (user, to, message))
+            log.error(u'%s: Trying to send sms to %s [%s]' % (user, to, message))
             return
 
         dynamic_addr = '%s <%s%d@do.itlater.com>' % (user, fake_name, ses.id)
